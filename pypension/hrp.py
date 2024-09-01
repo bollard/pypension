@@ -1,3 +1,5 @@
+# https://thepythonlab.medium.com/hierarchical-risk-parity-portfolio-optimization-f40584d7481d
+
 import matplotlib.pyplot as plt
 import numpy as np
 import yfinance as yf
@@ -33,13 +35,26 @@ class HierarchicalRiskParity:
 
 if __name__ == "__main__":
     # Define the tickers
-    tickers = ["JPM", "BAC", "C", "WFC"]
+    tickers = [
+        "0P0000XYWM.L",
+        "0P0001FE43.L",
+        "0P00017461.L",
+        "SMT.L",
+        "EWI.L",
+        "PHI.L",
+    ]
 
     # Download historical price data
     data = yf.download(tickers, start="2010-01-01", end="2023-08-31")["Adj Close"]
 
     # Calculate the returns
     returns = data.pct_change().dropna()
+
+    # alternatively...
+    if False:
+        price_returns = data.diff()
+        price_vol = price_returns.ewm(adjust=True, span=20, min_periods=20).std()
+        returns = price_returns / price_vol
 
     # Create an instance of HierarchicalRiskParity
     hrp = HierarchicalRiskParity(returns)
@@ -61,7 +76,7 @@ if __name__ == "__main__":
     cov_matrix = returns.cov()
 
     # Define the weights for the mean-variance portfolio
-    weights_mean_variance = np.array([0.25, 0.25, 0.25, 0.25])
+    weights_mean_variance = np.ones_like(mean_returns) / len(tickers)
 
     # Calculate the mean-variance portfolio returns
     mean_variance_returns = np.dot(mean_returns, weights_mean_variance)
