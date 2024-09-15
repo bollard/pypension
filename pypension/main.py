@@ -7,24 +7,22 @@ if __name__ == "__main__":
         RiskParity,
         TangencyPortfolio,
     )
+    from pypension.backtest import BacktestResult
     from pypension.config import END_DATE, START_DATE, TICKERS
 
     # Download historical price data
     df_data = yf.download(TICKERS, start=START_DATE, end=END_DATE)
     df_returns = df_data["Adj Close"].pct_change().dropna()
 
-    hrp = HierarchicalRiskParity(df_returns)
-    hrp_weights = hrp.allocate_weights()
-    print(hrp.evaluate_performance(df_returns, hrp_weights))
+    methods = {
+        "HRP": HierarchicalRiskParity,
+        "Risk Parity": RiskParity,
+        "Tangency Portfolio": TangencyPortfolio,
+        "EqualWight": EqualWight,
+    }
 
-    rp = RiskParity(df_returns)
-    rp_weights = rp.allocate_weights()
-    print(rp.evaluate_performance(df_returns, rp_weights))
+    for label, klass in methods.items():
+        instance = klass(df_returns)
+        weights = instance.allocate_weights()
 
-    mv = TangencyPortfolio(df_returns)
-    mv_weights = mv.allocate_weights()
-    print(mv.evaluate_performance(df_returns, mv_weights))
-
-    eq = EqualWight(df_returns)
-    eq_weights = eq.allocate_weights()
-    print(eq.evaluate_performance(df_returns, eq_weights))
+        BacktestResult(df_returns, weights).plot_portfolio_returns(label)
