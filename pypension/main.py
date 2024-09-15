@@ -31,4 +31,3 @@ if __name__ == "__main__":
 
         result = BacktestResult(df_returns_all, weights)
         result.plot_portfolio_returns(label)
-        result.summarise_portfolio_performance()
