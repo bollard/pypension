@@ -7,6 +7,8 @@ TICKERS = [
     "SMT.L",  # Scottish Mortgage Ord
     "EWI.L",  # Edinburgh Worldwide Ord
     "PHI.L",  # Pacific Horizon Ord
+    "VTI",  # Vanguard Total Stock Market Index Fund ETF Shares
+    "VT",  # Vanguard Total World Stock Index Fund ETF Shares
 ]
 
 START_DATE = dt.date(2010, 1, 1)
