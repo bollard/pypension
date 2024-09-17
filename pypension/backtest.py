@@ -1,7 +1,10 @@
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+import matplotlib.dates as mdates
 import numpy as np
 import pandas as pd
-
+import calendar
+import datetime as dt
 
 class BacktestResult:
     def __init__(self, returns: pd.DataFrame, weights: pd.Series):
@@ -37,14 +40,17 @@ class BacktestResult:
 
         ax1.set_title("Cumulative Growth and Drawdowns")
         ax1.set_ylabel("Cumulative Growth")
+        ax1.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax1.xaxis.set_major_locator(mdates.YearLocator())
         ax1.legend(loc="upper left")
         ax1.grid(True, alpha=0.3)  # Add faint grid lines
 
         # Create a twiny axis for the drawdown plot
-        ax2 = ax1.twiny()
+        ax2 = ax1.twinx()
         ax2.fill_between(drawdowns.index, drawdowns, color="red", alpha=0.3)
         ax2.set_xlim(ax1.get_xlim())  # Ensure both x-axes share the same range
         ax2.set_ylabel("Drawdown")
+        ax2.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     @staticmethod
     def _plot_discrete_annual_performance(ax, annual_returns, asset_annual_returns):
@@ -52,16 +58,24 @@ class BacktestResult:
         Plots discrete annual performance for both the portfolio and individual assets as a bar plot.
         """
         combined_annual_returns = pd.concat(
-            [annual_returns, asset_annual_returns], axis=1
+            [annual_returns, asset_annual_returns], axis="columns"
         )
         combined_annual_returns.columns = ["Portfolio"] + list(
             asset_annual_returns.columns
         )
 
+        width = dt.timedelta(days=30)
+
         # Plot as a bar chart
-        combined_annual_returns.plot(kind="bar", ax=ax)
+        for i, asset in enumerate(combined_annual_returns.columns):
+            offset = (i * width) - ((len(combined_annual_returns.columns) - 1) / 2 * width)
+            ax.bar(combined_annual_returns.index + offset, combined_annual_returns.loc[:, asset], width=width, label=asset)
+
         ax.set_title("Discrete Annual Performance")
         ax.set_ylabel("Return")
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax.set_xticks(combined_annual_returns.index)
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
         ax.legend(loc="upper left")
         ax.grid(True, alpha=0.3)  # Add faint grid lines
 
@@ -92,10 +106,14 @@ class BacktestResult:
             color="orange",
             label="30-Day Rolling Sharpe Ratio",
         )
+        ax_sr.set_ylabel("Sharpe Ratio")
+        ax_sr.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
 
         ax.set_title("Rolling 30-Day Volatility, Return, and Sharpe Ratio (Annualized)")
         ax.set_ylabel("Metrics")
         ax.legend(loc="upper left")
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax.xaxis.set_major_locator(mdates.YearLocator())
         ax.grid(True, alpha=0.3)  # Add faint grid lines
 
     @staticmethod
@@ -112,26 +130,40 @@ class BacktestResult:
 
         ax.set_title("Portfolio Asset Weights Over Time")
         ax.set_ylabel("Weight")
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        ax.tick_params(axis='x', labelrotation=0)
+        ax.grid(True, alpha=0.3)  # Add faint grid lines
+        ax.legend(loc="upper left")
+        ax.set_ylim(0, 1)
 
     @staticmethod
-    def _plot_monthly_returns_table(ax, monthly_returns_table):
+    def _plot_monthly_returns_table(ax, monthly_returns_table, n = 5):
         """
         Plots a table inside the figure showing monthly returns and annual totals.
         """
+        monthly_returns_table = monthly_returns_table.sort_index(ascending=False).head(n)
         monthly_returns_table = monthly_returns_table.mul(100).round(2)
+
+        values = monthly_returns_table.fillna(0.0).values
+        values[::, -1] = 0 # otherwise annual values will dominate
+        normalise = plt.Normalize(values.min(), values.max())
+
+        from matplotlib.colors import LinearSegmentedColormap
+        cmap = LinearSegmentedColormap.from_list('rg', ["r", "w", "g"], N=256)
+
+        colours = cmap(normalise(values))
 
         ax.axis("tight")
         ax.axis("off")
-        table = ax.table(
+        ax.table(
             cellText=monthly_returns_table.values,
             rowLabels=monthly_returns_table.index,
             colLabels=monthly_returns_table.columns,
             cellLoc="center",
+            cellColours=colours,
             loc="center",
+            alpha=0.3,
         )
-        table.auto_set_font_size(False)
-        table.set_fontsize(10)
-        table.scale(1.2, 1.2)
 
     # Main function to plot the portfolio returns and metrics
     def plot_portfolio_returns(self, label: str = None):
@@ -147,6 +179,7 @@ class BacktestResult:
         - returns: A DataFrame where each column is the daily returns of an individual asset.
         - weights: A numpy array representing the portfolio weights for each asset.
         """
+
         # Ensure weights are a numpy array
         weights = np.array(self.weights)
 
@@ -170,14 +203,15 @@ class BacktestResult:
             lambda x: (1 + x).prod() - 1
         )
 
-        # Calculate rolling 30-day metrics
-        rolling_30_volatility = portfolio_returns.rolling(window=30).std() * np.sqrt(
+        # Calculate rolling 30-day metrics (not annualised)
+        idx = ~portfolio_returns.isna()
+        rolling_30_volatility = (portfolio_returns.loc[idx].rolling(window=30).std() * np.sqrt(
             252
-        )
-        rolling_30_return = portfolio_returns.rolling(window=30).apply(
-            lambda x: (1 + x).prod() ** (252 / 30) - 1
-        )
-        rolling_30_sharpe = rolling_30_return / rolling_30_volatility
+        )).reindex(idx.index)
+        rolling_30_return = (portfolio_returns.loc[idx].rolling(window=30).apply(
+            lambda x: (1 + x).prod() - 1
+        )).reindex(idx.index)
+        rolling_30_sharpe = (rolling_30_return / rolling_30_volatility).ffill()
 
         # Calculate monthly returns
         portfolio_returns_df = portfolio_returns.to_frame(
@@ -201,23 +235,12 @@ class BacktestResult:
         monthly_returns_table["Annual"] = annual_returns_by_year.values
 
         # Set column names for the months
-        monthly_returns_table.columns = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-            "Annual",
-        ]
+        months = [month for month in calendar.month_abbr if len(month)]
+        monthly_returns_table.columns = months + ["Annual"]
 
         # Create the figure and axes for the subplots (A4 size)
+        plt.rcParams.update({'font.size': 8})
+
         fig, axs = plt.subplots(
             5,
             1,

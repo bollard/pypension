@@ -1,5 +1,3 @@
-# https://thepythonlab.medium.com/hierarchical-risk-parity-portfolio-optimization-f40584d7481d
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
