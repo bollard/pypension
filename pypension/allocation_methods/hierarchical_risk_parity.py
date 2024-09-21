@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.cluster.hierarchy import dendrogram, fcluster, linkage
-from scipy.spatial import distance_matrix
-from scipy.spatial.distance import squareform
+import scipy.cluster.hierarchy as sph
+import scipy.spatial as sps
+import scipy.spatial.distance as spd
 
 from pypension.allocation_methods.base import AbstractPortfolio
 
@@ -29,15 +29,11 @@ class HierarchicalRiskParity(AbstractPortfolio):
         # Step 1: Compute the covariance matrix
         cov_matrix = asset_returns_active.cov()
 
-        # Step 2: Compute the distance matrix
-        dist_matrix = distance_matrix(cov_matrix.values, cov_matrix.values)
-
         # Step 3: Perform hierarchical clustering
-        condensed_dist_matrix = squareform(dist_matrix)
-        linkage_matrix = linkage(condensed_dist_matrix, method="ward")
+        linkage_matrix = self.perform_clustering(cov_matrix)
 
         # Step 4: Form clusters
-        clusters = fcluster(linkage_matrix, t=n_clusters, criterion="maxclust")
+        clusters = sph.fcluster(linkage_matrix, t=n_clusters, criterion="maxclust")
 
         # Step 5: Compute cluster variances
         cluster_variances = pd.Series(index=asset_returns_active.columns)
@@ -60,12 +56,14 @@ class HierarchicalRiskParity(AbstractPortfolio):
         return portfolio_weights / portfolio_weights.sum()
 
     @staticmethod
-    def perform_clustering(correlation_matrix):
-        return linkage(correlation_matrix, method="single")
+    def perform_clustering(covariance_matrix):
+        dist_matrix = sps.distance_matrix(covariance_matrix.values, covariance_matrix.values)
+        condensed_dist_matrix = spd.squareform(dist_matrix)
+        return sph.linkage(condensed_dist_matrix, method="ward")
 
     def plot_dendrogram(self, correlation_matrix, **kwargs):
         linkage_matrix = self.perform_clustering(correlation_matrix)
-        dendrogram(linkage_matrix, **kwargs)
+        sph.dendrogram(linkage_matrix, **kwargs)
 
         plt.title("Hierarchical Clustering Dendrogram")
         plt.xlabel("Asset")

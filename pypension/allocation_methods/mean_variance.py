@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+import scipy.optimize as spo
 
 from pypension.allocation_methods.base import AbstractPortfolio
 
@@ -40,7 +40,7 @@ class MinimumVariance(AbstractPortfolio):
         initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
-        result = minimize(
+        result = spo.minimize(
             objective,
             x0=initial_weights,
             args=(cov_matrix,),
@@ -56,7 +56,7 @@ class MinimumVariance(AbstractPortfolio):
 
             return pd.Series(weights)
         else:
-            raise ValueError("Optimization failed.")
+            raise ValueError(result.message)
 
 
 class MaximumReturn(AbstractPortfolio):
@@ -93,7 +93,7 @@ class MaximumReturn(AbstractPortfolio):
         initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
-        result = minimize(
+        result = spo.minimize(
             objective,
             x0=initial_weights,
             args=(mean_returns,),
@@ -109,7 +109,7 @@ class MaximumReturn(AbstractPortfolio):
 
             return pd.Series(weights)
         else:
-            raise ValueError("Optimization failed.")
+            raise ValueError(result.message)
 
 
 class TangencyPortfolio(AbstractPortfolio):
@@ -153,7 +153,7 @@ class TangencyPortfolio(AbstractPortfolio):
         initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
-        result = minimize(
+        result = spo.minimize(
             objective,
             x0=initial_weights,
             args=(cov_matrix, mean_returns, risk_free_rate),
@@ -169,4 +169,4 @@ class TangencyPortfolio(AbstractPortfolio):
 
             return pd.Series(weights)
         else:
-            raise ValueError("Optimization failed.")
+            raise ValueError(result.message)

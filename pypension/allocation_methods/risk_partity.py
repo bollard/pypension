@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+import scipy.optimize as spo
 
 from pypension.allocation_methods.base import AbstractPortfolio
 
@@ -55,7 +55,7 @@ class RiskBudgeting(AbstractPortfolio):
         )
 
         # Optimization
-        result = minimize(
+        result = spo.minimize(
             objective,
             x0=initial_weights,
             args=(cov_matrix, target_risk_contributions),
@@ -71,7 +71,7 @@ class RiskBudgeting(AbstractPortfolio):
 
             return pd.Series(weights)
         else:
-            raise ValueError("Optimization failed.")
+            raise ValueError(result.message)
 
 
 class RiskParity(RiskBudgeting):
