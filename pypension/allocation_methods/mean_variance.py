@@ -6,7 +6,9 @@ from pypension.allocation_methods.base import AbstractPortfolio
 
 
 class MinimumVariance(AbstractPortfolio):
-    def allocate_weights(self, target_return=None):
+    def allocate_weights_t(
+        self, asset_returns: pd.DataFrame, target_return: float = None, **kwargs
+    ) -> pd.Series:
         """
         Compute the Minimum Variance Portfolio.
 
@@ -17,40 +19,48 @@ class MinimumVariance(AbstractPortfolio):
         - pd.Series: Optimal portfolio weights for minimum variance.
         """
 
+        idx = asset_returns.isna().all()
+        asset_returns_active = asset_returns.loc[:, ~idx]
+
         # Compute covariance matrix
-        returns = self.df_returns
-        cov_matrix = returns.cov()
+        cov_matrix = asset_returns_active.cov()
 
         # Define the objective function (Minimize portfolio variance)
-        def objective(weights):
+        def objective(weights, cov_matrix):
             return np.dot(weights.T, np.dot(cov_matrix, weights))
 
         # Constraints: weights sum to 1
         constraints = {"type": "eq", "fun": lambda w: np.sum(w) - 1}
 
         # Bounds: no shorting (weights between 0 and 1)
-        bounds = [(0, 1) for _ in range(len(returns.columns))]
+        n_assets = len(asset_returns_active.columns)
+        bounds = [(0, 1) for _ in range(n_assets)]
 
         # Initial guess (equal weights)
-        initial_weights = np.ones(len(returns.columns)) / len(returns.columns)
+        initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
         result = minimize(
             objective,
             x0=initial_weights,
+            args=(cov_matrix,),
             method="SLSQP",
             bounds=bounds,
             constraints=constraints,
         )
 
         if result.success:
-            return pd.Series(result.x, index=returns.columns)
+            weights = {asset: 0 for asset in asset_returns.columns}
+            for i, asset in enumerate(asset_returns_active.columns):
+                weights[asset] = result.x[i]
+
+            return pd.Series(weights)
         else:
             raise ValueError("Optimization failed.")
 
 
 class MaximumReturn(AbstractPortfolio):
-    def allocate_weights(self):
+    def allocate_weights_t(self, asset_returns: pd.DataFrame, **kwargs) -> pd.Series:
         """
         Compute the Maximum Return Portfolio.
 
@@ -61,42 +71,51 @@ class MaximumReturn(AbstractPortfolio):
         - pd.Series: Optimal portfolio weights for maximum return.
         """
 
+        idx = asset_returns.isna().all()
+        asset_returns_active = asset_returns.loc[:, ~idx]
+
         # Compute mean returns
-        returns = self.df_returns
-        mean_returns = returns.mean()
+        mean_returns = asset_returns_active.mean()
 
         # Define the objective function (Maximize portfolio return)
-        def objective(weights):
-            return -np.dot(
-                weights, mean_returns
-            )  # Negative because we minimize by default
+        def objective(weights, mean_returns):
+            # Negative because we minimize by default
+            return -np.dot(weights, mean_returns)
 
         # Constraints: weights sum to 1
         constraints = {"type": "eq", "fun": lambda w: np.sum(w) - 1}
 
         # Bounds: no shorting (weights between 0 and 1)
-        bounds = [(0, 1) for _ in range(len(returns.columns))]
+        n_assets = len(asset_returns_active.columns)
+        bounds = [(0, 1) for _ in range(n_assets)]
 
         # Initial guess (equal weights)
-        initial_weights = np.ones(len(returns.columns)) / len(returns.columns)
+        initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
         result = minimize(
             objective,
             x0=initial_weights,
+            args=(mean_returns,),
             method="SLSQP",
             bounds=bounds,
             constraints=constraints,
         )
 
         if result.success:
-            return pd.Series(result.x, index=returns.columns)
+            weights = {asset: 0 for asset in asset_returns.columns}
+            for i, asset in enumerate(asset_returns_active.columns):
+                weights[asset] = result.x[i]
+
+            return pd.Series(weights)
         else:
             raise ValueError("Optimization failed.")
 
 
 class TangencyPortfolio(AbstractPortfolio):
-    def allocate_weights(self, risk_free_rate=0.0):
+    def allocate_weights_t(
+        self, asset_returns: pd.DataFrame, risk_free_rate: float = 0.0, **kwargs
+    ) -> pd.Series:
         """
         Compute the Tangency (Maximum Sharpe Ratio) Portfolio.
 
@@ -108,13 +127,15 @@ class TangencyPortfolio(AbstractPortfolio):
         - pd.Series: Optimal portfolio weights for maximum Sharpe ratio.
         """
 
+        idx = asset_returns.isna().all()
+        asset_returns_active = asset_returns.loc[:, ~idx]
+
         # Compute mean returns and covariance matrix
-        returns = self.df_returns
-        mean_returns = returns.mean()
-        cov_matrix = returns.cov()
+        mean_returns = asset_returns_active.mean()
+        cov_matrix = asset_returns_active.cov()
 
         # Define the objective function (Maximize Sharpe Ratio)
-        def objective(weights):
+        def objective(weights, cov_matrix, mean_returns, risk_free_rate):
             portfolio_return = np.dot(weights, mean_returns)
             portfolio_variance = np.dot(weights.T, np.dot(cov_matrix, weights))
             portfolio_volatility = np.sqrt(portfolio_variance)
@@ -125,21 +146,27 @@ class TangencyPortfolio(AbstractPortfolio):
         constraints = {"type": "eq", "fun": lambda w: np.sum(w) - 1}
 
         # Bounds: no shorting (weights between 0 and 1)
-        bounds = [(0, 1) for _ in range(len(returns.columns))]
+        n_assets = len(asset_returns_active.columns)
+        bounds = [(0, 1) for _ in range(n_assets)]
 
         # Initial guess (equal weights)
-        initial_weights = np.ones(len(returns.columns)) / len(returns.columns)
+        initial_weights = np.ones(n_assets) / n_assets
 
         # Optimization
         result = minimize(
             objective,
             x0=initial_weights,
+            args=(cov_matrix, mean_returns, risk_free_rate),
             method="SLSQP",
             bounds=bounds,
             constraints=constraints,
         )
 
         if result.success:
-            return pd.Series(result.x, index=returns.columns)
+            weights = {asset: 0 for asset in asset_returns.columns}
+            for i, asset in enumerate(asset_returns_active.columns):
+                weights[asset] = result.x[i]
+
+            return pd.Series(weights)
         else:
             raise ValueError("Optimization failed.")

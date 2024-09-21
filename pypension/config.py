@@ -1,4 +1,6 @@
-import datetime as dt
+from zoneinfo import ZoneInfo
+
+import pandas as pd
 
 TICKERS = [
     "0P0000XYWM.L",  # Royal London Sustainable Leaders C Acc
@@ -9,17 +11,17 @@ TICKERS = [
     "PHI.L",  # Pacific Horizon Ord
     "VTI",  # Vanguard Total Stock Market Index Fund ETF Shares
     "VT",  # Vanguard Total World Stock Index Fund ETF Shares
-    "BUT.L", # The Brunner Investment Trust PLC
-    "CGT.L", # Capital Gearing Trust p.l.c
-    "FCIT.L", # F&C Investment Trust PLC
-    "JGGI.L", # JPMorgan Global Growth & Income plc
-    "PCT.L", # Polar Capital Technology Trust plc
-    "PNL.L", # Personal Assets Trust plc
-    "RICA.L", # Ruffer Investment Company Limited
-    "QQQM", # Invesco NASDAQ 100 ETF
-    "VXUS", # Vanguard Total International Stock Index Fund ETF Shares
-    "BRK-B", # Berkshire Hathaway Inc.
+    "BUT.L",  # The Brunner Investment Trust PLC
+    "CGT.L",  # Capital Gearing Trust p.l.c
+    "FCIT.L",  # F&C Investment Trust PLC
+    "JGGI.L",  # JPMorgan Global Growth & Income plc
+    "PCT.L",  # Polar Capital Technology Trust plc
+    "PNL.L",  # Personal Assets Trust plc
+    "RICA.L",  # Ruffer Investment Company Limited
+    "QQQM",  # Invesco NASDAQ 100 ETF
+    "VXUS",  # Vanguard Total International Stock Index Fund ETF Shares
+    "BRK-B",  # Berkshire Hathaway Inc.
 ]
 
-START_DATE = dt.date(2010, 1, 1)
-END_DATE = dt.date(2023, 8, 31)
+START_DATE = pd.Timestamp(2010, 1, 1, tz=ZoneInfo("UTC"))
+END_DATE = pd.Timestamp(2023, 8, 31, tz=ZoneInfo("UTC"))

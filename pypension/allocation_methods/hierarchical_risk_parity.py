@@ -9,7 +9,9 @@ from pypension.allocation_methods.base import AbstractPortfolio
 
 
 class HierarchicalRiskParity(AbstractPortfolio):
-    def allocate_weights(self, n_clusters=3):
+    def allocate_weights_t(
+        self, asset_returns: pd.DataFrame, n_clusters: int = 3, **kwargs
+    ) -> pd.Series:
         """
         Perform Hierarchical Risk Parity (HRP) for portfolio optimization.
 
@@ -21,9 +23,11 @@ class HierarchicalRiskParity(AbstractPortfolio):
         - pd.Series: Optimal portfolio weights.
         """
 
+        idx = asset_returns.isna().all()
+        asset_returns_active = asset_returns.loc[:, ~idx]
+
         # Step 1: Compute the covariance matrix
-        df_returns = self.df_returns
-        cov_matrix = df_returns.cov()
+        cov_matrix = asset_returns_active.cov()
 
         # Step 2: Compute the distance matrix
         dist_matrix = distance_matrix(cov_matrix.values, cov_matrix.values)
@@ -36,9 +40,9 @@ class HierarchicalRiskParity(AbstractPortfolio):
         clusters = fcluster(linkage_matrix, t=n_clusters, criterion="maxclust")
 
         # Step 5: Compute cluster variances
-        cluster_variances = pd.Series(index=df_returns.columns)
+        cluster_variances = pd.Series(index=asset_returns_active.columns)
         for cluster_id in np.unique(clusters):
-            cluster_assets = df_returns.columns[clusters == cluster_id]
+            cluster_assets = asset_returns_active.columns[clusters == cluster_id]
             cluster_cov = cov_matrix.loc[cluster_assets, cluster_assets]
             cluster_variances[cluster_assets] = np.diag(cluster_cov)
 
@@ -47,9 +51,9 @@ class HierarchicalRiskParity(AbstractPortfolio):
         inv_var /= inv_var.sum()
 
         # Step 7: Create the portfolio weights based on hierarchical risk parity
-        portfolio_weights = pd.Series(index=df_returns.columns)
+        portfolio_weights = pd.Series(index=asset_returns.columns)
         for cluster_id in np.unique(clusters):
-            cluster_assets = df_returns.columns[clusters == cluster_id]
+            cluster_assets = asset_returns_active.columns[clusters == cluster_id]
             cluster_weight = inv_var[cluster_assets].sum()
             portfolio_weights[cluster_assets] = inv_var[cluster_assets] / cluster_weight
 

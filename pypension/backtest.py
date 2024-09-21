@@ -1,15 +1,17 @@
-import matplotlib.pyplot as plt
-import matplotlib.ticker as mtick
-import matplotlib.dates as mdates
-import numpy as np
-import pandas as pd
 import calendar
 import datetime as dt
 
+import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+import numpy as np
+import pandas as pd
+
+
 class BacktestResult:
-    def __init__(self, returns: pd.DataFrame, weights: pd.Series):
-        self.returns = returns
-        self.weights = weights
+    def __init__(self, asset_returns: pd.DataFrame, asset_weights: pd.DataFrame):
+        self.asset_returns = asset_returns
+        self.asset_weights = asset_weights
 
     # Define the private plotting functions for each type of plot
     @staticmethod
@@ -68,8 +70,15 @@ class BacktestResult:
 
         # Plot as a bar chart
         for i, asset in enumerate(combined_annual_returns.columns):
-            offset = (i * width) - ((len(combined_annual_returns.columns) - 1) / 2 * width)
-            ax.bar(combined_annual_returns.index + offset, combined_annual_returns.loc[:, asset], width=width, label=asset)
+            offset = (i * width) - (
+                (len(combined_annual_returns.columns) - 1) / 2 * width
+            )
+            ax.bar(
+                combined_annual_returns.index + offset,
+                combined_annual_returns.loc[:, asset],
+                width=width,
+                label=asset,
+            )
 
         ax.set_title("Discrete Annual Performance")
         ax.set_ylabel("Return")
@@ -107,7 +116,7 @@ class BacktestResult:
             label="30-Day Rolling Sharpe Ratio",
         )
         ax_sr.set_ylabel("Sharpe Ratio")
-        ax_sr.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2f'))
+        ax_sr.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.2f"))
 
         ax.set_title("Rolling 30-Day Volatility, Return, and Sharpe Ratio (Annualized)")
         ax.set_ylabel("Metrics")
@@ -117,39 +126,38 @@ class BacktestResult:
         ax.grid(True, alpha=0.3)  # Add faint grid lines
 
     @staticmethod
-    def _plot_asset_weights_over_time(ax, returns, weights):
+    def _plot_asset_weights_over_time(ax, weights_df):
         """
         Plots a shaded area plot showing the evolution of asset weights over time.
         """
-        weights_df = pd.DataFrame(
-            np.repeat(weights[np.newaxis, :], len(returns), axis=0),
-            index=returns.index,
-            columns=returns.columns,
-        )
+
         weights_df.plot.area(ax=ax, stacked=True, alpha=0.6)
 
         ax.set_title("Portfolio Asset Weights Over Time")
         ax.set_ylabel("Weight")
         ax.xaxis.set_major_locator(mdates.YearLocator())
-        ax.tick_params(axis='x', labelrotation=0)
+        ax.tick_params(axis="x", labelrotation=0)
         ax.grid(True, alpha=0.3)  # Add faint grid lines
         ax.legend(loc="upper left")
         ax.set_ylim(0, 1)
 
     @staticmethod
-    def _plot_monthly_returns_table(ax, monthly_returns_table, n = 5):
+    def _plot_monthly_returns_table(ax, monthly_returns_table, n=5):
         """
         Plots a table inside the figure showing monthly returns and annual totals.
         """
-        monthly_returns_table = monthly_returns_table.sort_index(ascending=False).head(n)
+        monthly_returns_table = monthly_returns_table.sort_index(ascending=False).head(
+            n
+        )
         monthly_returns_table = monthly_returns_table.mul(100).round(2)
 
-        values = monthly_returns_table.fillna(0.0).values
-        values[::, -1] = 0 # otherwise annual values will dominate
+        values = monthly_returns_table.fillna(0.0).to_numpy(np.float64)
+        values[::, -1] = 0  # otherwise annual values will dominate
         normalise = plt.Normalize(values.min(), values.max())
 
         from matplotlib.colors import LinearSegmentedColormap
-        cmap = LinearSegmentedColormap.from_list('rg', ["r", "w", "g"], N=256)
+
+        cmap = LinearSegmentedColormap.from_list("rg", ["r", "w", "g"], N=256)
 
         colours = cmap(normalise(values))
 
@@ -181,36 +189,41 @@ class BacktestResult:
         """
 
         # Ensure weights are a numpy array
-        weights = np.array(self.weights)
+        df_weights = self.asset_weights.reindex(
+            self.asset_returns.index, method="bfill"
+        )
 
         # Calculate portfolio returns by multiplying individual asset returns by weights and summing them
-        returns = self.returns.loc[:, self.weights.index]
-        portfolio_returns = returns.dot(weights)
+        df_returns = self.asset_returns.loc[:, df_weights.columns]
+        portfolio_returns = (df_weights * df_returns).sum(axis="columns")
 
         # Calculate cumulative returns (Cumulative growth) for the portfolio and each individual asset
         portfolio_cumulative_returns = (1 + portfolio_returns).cumprod()
-        assets_cumulative_returns = (1 + returns).cumprod()
+        assets_cumulative_returns = (1 + self.asset_returns).cumprod()
 
         # Calculate drawdowns
         cumulative_max = portfolio_cumulative_returns.cummax()
         drawdowns = (portfolio_cumulative_returns - cumulative_max) / cumulative_max
+        drawdowns = drawdowns.ffill().fillna(0)
 
         # Calculate annual discrete performance
         annual_returns = portfolio_returns.resample("YE").apply(
             lambda x: (1 + x).prod() - 1
         )
-        asset_annual_returns = returns.resample("YE").apply(
+        asset_annual_returns = self.asset_returns.resample("YE").apply(
             lambda x: (1 + x).prod() - 1
         )
 
         # Calculate rolling 30-day metrics (not annualised)
         idx = ~portfolio_returns.isna()
-        rolling_30_volatility = (portfolio_returns.loc[idx].rolling(window=30).std() * np.sqrt(
-            252
-        )).reindex(idx.index)
-        rolling_30_return = (portfolio_returns.loc[idx].rolling(window=30).apply(
-            lambda x: (1 + x).prod() - 1
-        )).reindex(idx.index)
+        rolling_30_volatility = (
+            portfolio_returns.loc[idx].rolling(window=30).std() * np.sqrt(252)
+        ).reindex(idx.index)
+        rolling_30_return = (
+            portfolio_returns.loc[idx]
+            .rolling(window=30)
+            .apply(lambda x: (1 + x).prod() - 1)
+        ).reindex(idx.index)
         rolling_30_sharpe = (rolling_30_return / rolling_30_volatility).ffill()
 
         # Calculate monthly returns
@@ -239,7 +252,7 @@ class BacktestResult:
         monthly_returns_table.columns = months + ["Annual"]
 
         # Create the figure and axes for the subplots (A4 size)
-        plt.rcParams.update({'font.size': 8})
+        plt.rcParams.update({"font.size": 8})
 
         fig, axs = plt.subplots(
             5,
@@ -265,7 +278,7 @@ class BacktestResult:
         )
 
         # ---- Fourth Plot: Asset Weights Over Time (Shaded Area Plot) ----
-        self._plot_asset_weights_over_time(axs[3], returns, weights)
+        self._plot_asset_weights_over_time(axs[3], df_weights)
 
         # ---- Fifth: Monthly Returns Table (Inside Plot) ----
         self._plot_monthly_returns_table(axs[4], monthly_returns_table)
