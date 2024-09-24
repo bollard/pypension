@@ -34,8 +34,14 @@ class AbstractPortfolio(abc.ABC):
     def allocate_weights_t(
         self, asset_returns: pd.DataFrame, *args, **kwargs
     ) -> pd.Series:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     def calculate_returns(df_close: pd.DataFrame) -> pd.DataFrame:
         return df_close.pct_change().dropna()
+
+    @staticmethod
+    def calculate_covariance(df_returns: pd.DataFrame) -> pd.DataFrame:
+        index = df_returns.index
+        df_cov = df_returns.ewm(halflife="30 days", times=index).cov()
+        return df_cov.loc[index[-1]]

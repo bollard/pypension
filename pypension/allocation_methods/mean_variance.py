@@ -23,7 +23,7 @@ class MinimumVariance(AbstractPortfolio):
         asset_returns_active = asset_returns.loc[:, ~idx]
 
         # Compute covariance matrix
-        cov_matrix = asset_returns_active.cov()
+        cov_matrix = self.calculate_covariance(asset_returns_active)
 
         # Define the objective function (Minimize portfolio variance)
         def objective(weights, cov_matrix):
@@ -132,7 +132,7 @@ class TangencyPortfolio(AbstractPortfolio):
 
         # Compute mean returns and covariance matrix
         mean_returns = asset_returns_active.mean()
-        cov_matrix = asset_returns_active.cov()
+        cov_matrix = self.calculate_covariance(asset_returns_active)
 
         # Define the objective function (Maximize Sharpe Ratio)
         def objective(weights, cov_matrix, mean_returns, risk_free_rate):

@@ -27,7 +27,7 @@ class RiskBudgeting(AbstractPortfolio):
         asset_returns_active = asset_returns.loc[:, ~idx]
 
         # Compute covariance matrix
-        cov_matrix = asset_returns_active.cov()
+        cov_matrix = self.calculate_covariance(asset_returns_active)
 
         # Define the objective function (Minimize the deviation of risk contributions from target)
         def objective(weights, cov_matrix, target_risk_contributions):

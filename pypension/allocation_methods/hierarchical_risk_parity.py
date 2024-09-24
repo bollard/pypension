@@ -27,7 +27,7 @@ class HierarchicalRiskParity(AbstractPortfolio):
         asset_returns_active = asset_returns.loc[:, ~idx]
 
         # Step 1: Compute the covariance matrix
-        cov_matrix = asset_returns_active.cov()
+        cov_matrix = self.calculate_covariance(asset_returns_active)
 
         # Step 3: Perform hierarchical clustering
         linkage_matrix = self.perform_clustering(cov_matrix)
@@ -57,7 +57,9 @@ class HierarchicalRiskParity(AbstractPortfolio):
 
     @staticmethod
     def perform_clustering(covariance_matrix):
-        dist_matrix = sps.distance_matrix(covariance_matrix.values, covariance_matrix.values)
+        dist_matrix = sps.distance_matrix(
+            covariance_matrix.values, covariance_matrix.values
+        )
         condensed_dist_matrix = spd.squareform(dist_matrix)
         return sph.linkage(condensed_dist_matrix, method="ward")
 
