@@ -4,23 +4,18 @@ import pandas as pd
 
 
 class AbstractPortfolio(abc.ABC):
-    def __init__(
-        self, asset_returns: pd.DataFrame, rebalance_dates: pd.DatetimeIndex = None
-    ):
+    def __init__(self, asset_returns: pd.DataFrame):
         self.asset_returns = asset_returns
-        self.rebalance_dates = rebalance_dates
 
-    @property
-    def rebalance_schedule(self) -> pd.DatetimeIndex:
-        if self.rebalance_dates is None:
-            return self.asset_returns.index.take([-1])
+    def allocate_weights(
+        self, rebalance_dates: pd.DatetimeIndex | None = None, *args, **kwargs
+    ) -> pd.DataFrame:
+        if rebalance_dates is None:
+            rebalance_dates = self.asset_returns.index.take([-1])
 
-        return self.rebalance_dates
-
-    def allocate_weights(self, *args, **kwargs) -> pd.DataFrame:
         weights_t = {}
 
-        for rebalance_date in self.rebalance_schedule:
+        for rebalance_date in rebalance_dates:
             asset_returns_t = self.asset_returns.loc[
                 self.asset_returns.index < rebalance_date
             ]
@@ -42,6 +37,7 @@ class AbstractPortfolio(abc.ABC):
 
     @staticmethod
     def calculate_covariance(df_returns: pd.DataFrame) -> pd.DataFrame:
-        index = df_returns.index
-        df_cov = df_returns.ewm(halflife="30 days", times=index).cov()
-        return df_cov.loc[index[-1]]
+        # index = df_returns.index
+        # df_cov = df_returns.ewm(halflife="30 days", times=index).cov()
+        # return df_cov.loc[index[-1]]
+        return df_returns.cov()
