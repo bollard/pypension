@@ -21,7 +21,8 @@ TICKERS = [
     "QQQM",  # Invesco NASDAQ 100 ETF
     "VXUS",  # Vanguard Total International Stock Index Fund ETF Shares
     "BRK-B",  # Berkshire Hathaway Inc.
+    "MYI.L", # Murray International Trust PLC
 ]
 
 START_DATE = pd.Timestamp(2010, 1, 1, tz=ZoneInfo("UTC"))
-END_DATE = pd.Timestamp(2023, 8, 31, tz=ZoneInfo("UTC"))
+END_DATE = pd.Timestamp(2023, 12, 31, tz=ZoneInfo("UTC"))

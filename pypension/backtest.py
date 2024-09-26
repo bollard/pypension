@@ -16,7 +16,7 @@ class BacktestResult:
     # Define the private plotting functions for each type of plot
     @staticmethod
     def _plot_cumulative_growth_and_drawdown(
-        ax1, portfolio_cumulative_returns, assets_cumulative_returns, drawdowns
+        ax1, portfolio_cumulative_returns, portfolio_drawdowns, assets_cumulative_returns = None
     ):
         """
         Plots cumulative growth for the portfolio and individual assets, with drawdowns using twiny.
@@ -31,14 +31,15 @@ class BacktestResult:
         )
 
         # Plot each individual asset's cumulative growth (thinner, fainter)
-        for i, col in enumerate(assets_cumulative_returns.columns):
-            ax1.plot(
-                assets_cumulative_returns.index,
-                assets_cumulative_returns[col],
-                lw=1,
-                alpha=0.6,
-                label=col,
-            )
+        if assets_cumulative_returns is not None:
+            for i, col in enumerate(assets_cumulative_returns.columns):
+                ax1.plot(
+                    assets_cumulative_returns.index,
+                    assets_cumulative_returns[col],
+                    lw=1,
+                    alpha=0.6,
+                    label=col,
+                )
 
         ax1.set_title("Cumulative Growth and Drawdowns")
         ax1.set_ylabel("Cumulative Growth")
@@ -49,7 +50,7 @@ class BacktestResult:
 
         # Create a twiny axis for the drawdown plot
         ax2 = ax1.twinx()
-        ax2.fill_between(drawdowns.index, drawdowns, color="red", alpha=0.3)
+        ax2.fill_between(portfolio_drawdowns.index, portfolio_drawdowns, color="red", alpha=0.3)
         ax2.set_xlim(ax1.get_xlim())  # Ensure both x-axes share the same range
         ax2.set_ylabel("Drawdown")
         ax2.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
@@ -203,8 +204,8 @@ class BacktestResult:
 
         # Calculate drawdowns
         cumulative_max = portfolio_cumulative_returns.cummax()
-        drawdowns = (portfolio_cumulative_returns - cumulative_max) / cumulative_max
-        drawdowns = drawdowns.ffill().fillna(0)
+        portfolio_drawdowns = (portfolio_cumulative_returns - cumulative_max) / cumulative_max
+        portfolio_drawdowns = portfolio_drawdowns.ffill().fillna(0)
 
         # Calculate annual discrete performance
         annual_returns = portfolio_returns.resample("YE").apply(
@@ -264,7 +265,7 @@ class BacktestResult:
 
         # ---- First Plot: Cumulative Growth and Drawdown (Subplot) ----
         self._plot_cumulative_growth_and_drawdown(
-            axs[0], portfolio_cumulative_returns, assets_cumulative_returns, drawdowns
+            axs[0], portfolio_cumulative_returns, portfolio_drawdowns
         )
 
         # ---- Second Plot: Discrete Annual Performance (Bar Plot) ----
