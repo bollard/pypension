@@ -3,10 +3,10 @@ import yfinance as yf
 
 from pypension.allocation_methods import (
     EqualWight,
+    FixedWeight,
     HierarchicalRiskParity,
     RiskParity,
     TangencyPortfolio,
-    FixedWeight
 )
 from pypension.backtest import BacktestResult
 from pypension.config import END_DATE, START_DATE, TICKERS
@@ -18,7 +18,16 @@ def main() -> None:
         lambda x: x[~x.isna()].pct_change()
     )  # in decimal
 
-    weights = {"BUT.L": 0.15, "JGGI.L": 0.15, "PCT.L": 0.075, "SMT.L": 0.075, "MYI.L": 0.075, "BRK-B": 0.075, "VT": 0.20, "VTI": 0.20}
+    weights = {
+        "BUT.L": 0.15,
+        "JGGI.L": 0.15,
+        "PCT.L": 0.075,
+        "SMT.L": 0.075,
+        "MYI.L": 0.075,
+        "BRK-B": 0.075,
+        "VT": 0.20,
+        "VTI": 0.20,
+    }
     ser_rebalance_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="BME")
 
     portfolios = {

@@ -8,9 +8,7 @@ class FixedWeight(AbstractPortfolio):
         super().__init__(asset_returns=asset_returns)
         self.weights = weights
 
-    def allocate_weights_t(
-        self, asset_returns: pd.DataFrame, **kwargs
-    ) -> pd.Series:
+    def allocate_weights_t(self, asset_returns: pd.DataFrame, **kwargs) -> pd.Series:
         return pd.Series(self.weights)
 
 
