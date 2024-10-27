@@ -180,7 +180,7 @@ class BacktestResult:
         )
 
     # Main function to plot the portfolio returns and metrics
-    def plot_portfolio_returns(self, label: str = None):
+    def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
         """
         Plots various portfolio performance metrics including:
         - Cumulative growth and drawdown
@@ -294,6 +294,4 @@ class BacktestResult:
         if label is not None:
             plt.suptitle(label)
 
-        # Adjust layout for better readability
-        plt.tight_layout()
-        plt.show()
+        return fig

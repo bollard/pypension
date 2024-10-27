@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
 
@@ -9,7 +10,7 @@ from pypension.allocation_methods import (
     TangencyPortfolio,
 )
 from pypension.backtest import BacktestResult
-from pypension.config import END_DATE, START_DATE, TICKERS
+from pypension.config import END_DATE, PLOT_DIR, START_DATE, TICKERS
 
 
 def main() -> None:
@@ -23,8 +24,7 @@ def main() -> None:
         "JGGI.L": 0.15,
         "PCT.L": 0.075,
         "SMT.L": 0.075,
-        "MYI.L": 0.075,
-        "BRK-B": 0.075,
+        "VXUS": 0.15,
         "VT": 0.20,
         "VTI": 0.20,
     }
@@ -39,11 +39,16 @@ def main() -> None:
         "Equal Wight": EqualWight(df_returns.loc[:, weights.keys()]),
     }
 
-    for label, portfolio in portfolios.items():
+    for i, (label, portfolio) in enumerate(portfolios.items(), start=1):
+        print(f"Running [{label}] ({i}/{len(portfolios)})")
         df_weights = portfolio.allocate_weights(rebalance_dates=ser_rebalance_dates)
 
         result = BacktestResult(portfolio.asset_returns, df_weights)
-        result.plot_portfolio_returns(label)
+        fig = result.plot_portfolio_returns(label)
+
+        PLOT_DIR.mkdir(parents=True, exist_ok=True)
+        fig.savefig(PLOT_DIR / f"{label}.png")
+        plt.close(fig)
 
 
 if __name__ == "__main__":

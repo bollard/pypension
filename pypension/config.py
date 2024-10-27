@@ -1,3 +1,4 @@
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -24,5 +25,7 @@ TICKERS = [
     "MYI.L",  # Murray International Trust PLC
 ]
 
-START_DATE = pd.Timestamp(2010, 1, 1, tz=ZoneInfo("UTC"))
-END_DATE = pd.Timestamp(2023, 12, 31, tz=ZoneInfo("UTC"))
+START_DATE = pd.Timestamp(2014, 1, 1, tz=ZoneInfo("UTC"))
+END_DATE = pd.Timestamp.utcnow().normalize()
+
+PLOT_DIR = Path().resolve().parent / "plots"
