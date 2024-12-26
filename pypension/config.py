@@ -25,7 +25,8 @@ TICKERS = [
     "MYI.L",  # Murray International Trust PLC
 ]
 
-START_DATE = pd.Timestamp(2014, 1, 1, tz=ZoneInfo("UTC"))
-END_DATE = pd.Timestamp.utcnow().normalize()
+TIME_ZONE = ZoneInfo("UTC")
+START_DATE = pd.Timestamp(2014, 1, 1, tz=TIME_ZONE)
+END_DATE = pd.Timestamp.now(tz=TIME_ZONE).normalize()
 
 PLOT_DIR = Path().resolve().parent / "plots"

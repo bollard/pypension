@@ -10,12 +10,16 @@ from pypension.allocation_methods import (
     TangencyPortfolio,
 )
 from pypension.backtest import BacktestResult
-from pypension.config import END_DATE, PLOT_DIR, START_DATE, TICKERS
+from pypension.config import END_DATE, PLOT_DIR, START_DATE, TICKERS, TIME_ZONE
 
 
 def main() -> None:
-    df_data = yf.download(TICKERS, start=START_DATE, end=END_DATE).convert_dtypes()
-    df_returns = df_data["Adj Close"].apply(
+    df_data = (
+        yf.download(TICKERS, start=START_DATE, end=END_DATE, auto_adjust=True)
+        .convert_dtypes()
+        .tz_localize(TIME_ZONE)
+    )
+    df_returns = df_data["Close"].apply(
         lambda x: x[~x.isna()].pct_change()
     )  # in decimal
 
