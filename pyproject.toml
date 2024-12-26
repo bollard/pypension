@@ -15,7 +15,7 @@ seaborn = "^0.13"
 yfinance = "^0.2"
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.7"
+ruff = "^0.8"
 
 [tool.ruff]
 target-version = "py311"
