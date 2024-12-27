@@ -151,14 +151,14 @@ class BacktestResult:
 
     @staticmethod
     def _plot_monthly_returns_table(
-        ax: plt.Axes, df_portfolio_returns_monthly: pd.DataFrame, n: int = 5
+        ax: plt.Axes, df_portfolio_returns_monthly: pd.DataFrame, n_years: int = 10
     ):
         """
         Plots a table inside the figure showing monthly returns and annual totals.
         """
         df_portfolio_returns_monthly = df_portfolio_returns_monthly.sort_index(
             ascending=False
-        ).head(n)
+        ).head(n_years)
         df_portfolio_returns_monthly = df_portfolio_returns_monthly.mul(100).round(2)
 
         values = df_portfolio_returns_monthly.fillna(0.0).to_numpy(np.float64)
