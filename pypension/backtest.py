@@ -174,7 +174,7 @@ class BacktestResult:
         ax.axis("tight")
         ax.axis("off")
         ax.table(
-            cellText=df_portfolio_returns_monthly.values,
+            cellText=df_portfolio_returns_monthly.map('{:,.2f}'.format).values,
             rowLabels=df_portfolio_returns_monthly.index,
             colLabels=df_portfolio_returns_monthly.columns,
             cellLoc="center",
