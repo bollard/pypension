@@ -16,18 +16,18 @@ class BacktestResult:
     # Define the private plotting functions for each type of plot
     @staticmethod
     def _plot_cumulative_growth_and_drawdown(
-        ax1,
-        portfolio_cumulative_returns,
-        portfolio_drawdowns,
+        ax: plt.Axes,
+        ser_equity_curve: pd.Series,
+        ser_portfolio_drawdowns: pd.Series,
         assets_cumulative_returns=None,
     ):
         """
         Plots cumulative growth for the portfolio and individual assets, with drawdowns using twiny.
         """
         # Plot the cumulative growth of the portfolio (thicker)
-        ax1.plot(
-            portfolio_cumulative_returns.index,
-            portfolio_cumulative_returns,
+        ax.plot(
+            ser_equity_curve.index,
+            ser_equity_curve,
             color="g",
             lw=2,
             label="Portfolio",
@@ -36,7 +36,7 @@ class BacktestResult:
         # Plot each individual asset's cumulative growth (thinner, fainter)
         if assets_cumulative_returns is not None:
             for i, col in enumerate(assets_cumulative_returns.columns):
-                ax1.plot(
+                ax.plot(
                     assets_cumulative_returns.index,
                     assets_cumulative_returns[col],
                     lw=1,
@@ -44,32 +44,37 @@ class BacktestResult:
                     label=col,
                 )
 
-        ax1.set_title("Cumulative Growth and Drawdowns")
-        ax1.set_ylabel("Cumulative Growth")
-        ax1.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-        ax1.xaxis.set_major_locator(mdates.YearLocator())
-        ax1.legend(loc="upper left")
-        ax1.grid(True, alpha=0.3)  # Add faint grid lines
+        ax.set_title("Cumulative Growth and Drawdowns")
+        ax.set_ylabel("Cumulative Growth")
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+        ax.legend(loc="upper left")
+        ax.grid(True, alpha=0.3)  # Add faint grid lines
 
         # Create a twiny axis for the drawdown plot
-        ax2 = ax1.twinx()
-        ax2.fill_between(
-            portfolio_drawdowns.index, portfolio_drawdowns, color="red", alpha=0.3
+        ax_dd = ax.twinx()
+        ax_dd.fill_between(
+            ser_portfolio_drawdowns.index,
+            ser_portfolio_drawdowns,
+            color="red",
+            alpha=0.3,
         )
-        ax2.set_xlim(ax1.get_xlim())  # Ensure both x-axes share the same range
-        ax2.set_ylabel("Drawdown")
-        ax2.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
+        ax_dd.set_xlim(ax.get_xlim())  # Ensure both x-axes share the same range
+        ax_dd.set_ylabel("Drawdown")
+        ax_dd.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     @staticmethod
-    def _plot_discrete_annual_performance(ax, annual_returns, asset_annual_returns):
+    def _plot_discrete_annual_performance(
+        ax, annual_returns: pd.Series, ser_asset_annual_returns: pd.Series
+    ):
         """
         Plots discrete annual performance for both the portfolio and individual assets as a bar plot.
         """
         combined_annual_returns = pd.concat(
-            [annual_returns, asset_annual_returns], axis="columns"
+            [annual_returns, ser_asset_annual_returns], axis="columns"
         )
         combined_annual_returns.columns = ["Portfolio"] + list(
-            asset_annual_returns.columns
+            ser_asset_annual_returns.columns
         )
 
         width = dt.timedelta(days=30)
@@ -96,33 +101,30 @@ class BacktestResult:
 
     @staticmethod
     def _plot_rolling_metrics(
-        ax, rolling_30_volatility, rolling_30_return, rolling_30_sharpe
+        ax: plt.Axes,
+        ser_rolling_volatility: pd.Series,
+        ser_rolling_return: pd.Series,
+        ser_rolling_sharpe: pd.Series,
     ):
         """
         Plots rolling 30-day volatility, return, and Sharpe ratio for the portfolio.
         """
         ax.plot(
-            rolling_30_volatility.index,
-            rolling_30_volatility,
+            ser_rolling_volatility.index,
+            ser_rolling_volatility,
             color="purple",
             label="30-Day Rolling Volatility (Annualized)",
         )
-        ax.plot(
-            rolling_30_return.index,
-            rolling_30_return,
-            color="blue",
+
+        ax_return = ax.twinx()
+        ax_return.plot(
+            ser_rolling_return.index,
+            ser_rolling_return,
+            color="orange",
             label="30-Day Rolling Return (Annualized)",
         )
-
-        ax_sr = ax.twinx()
-        ax_sr.plot(
-            rolling_30_sharpe.index,
-            rolling_30_sharpe,
-            color="orange",
-            label="30-Day Rolling Sharpe Ratio",
-        )
-        ax_sr.set_ylabel("Sharpe Ratio")
-        ax_sr.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.2f"))
+        ax_return.set_ylabel("Sharpe Ratio")
+        ax_return.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.2f"))
 
         ax.set_title("Rolling 30-Day Volatility, Return, and Sharpe Ratio (Annualized)")
         ax.set_ylabel("Metrics")
@@ -132,7 +134,7 @@ class BacktestResult:
         ax.grid(True, alpha=0.3)  # Add faint grid lines
 
     @staticmethod
-    def _plot_asset_weights_over_time(ax, weights_df):
+    def _plot_asset_weights_over_time(ax: plt.Axes, weights_df: pd.DataFrame):
         """
         Plots a shaded area plot showing the evolution of asset weights over time.
         """
@@ -148,16 +150,18 @@ class BacktestResult:
         ax.set_ylim(0, 1)
 
     @staticmethod
-    def _plot_monthly_returns_table(ax, monthly_returns_table, n=5):
+    def _plot_monthly_returns_table(
+        ax: plt.Axes, df_portfolio_returns_monthly: pd.DataFrame, n: int = 5
+    ):
         """
         Plots a table inside the figure showing monthly returns and annual totals.
         """
-        monthly_returns_table = monthly_returns_table.sort_index(ascending=False).head(
-            n
-        )
-        monthly_returns_table = monthly_returns_table.mul(100).round(2)
+        df_portfolio_returns_monthly = df_portfolio_returns_monthly.sort_index(
+            ascending=False
+        ).head(n)
+        df_portfolio_returns_monthly = df_portfolio_returns_monthly.mul(100).round(2)
 
-        values = monthly_returns_table.fillna(0.0).to_numpy(np.float64)
+        values = df_portfolio_returns_monthly.fillna(0.0).to_numpy(np.float64)
         values[::, -1] = 0  # otherwise annual values will dominate
         normalise = plt.Normalize(values.min(), values.max())
 
@@ -170,9 +174,9 @@ class BacktestResult:
         ax.axis("tight")
         ax.axis("off")
         ax.table(
-            cellText=monthly_returns_table.values,
-            rowLabels=monthly_returns_table.index,
-            colLabels=monthly_returns_table.columns,
+            cellText=df_portfolio_returns_monthly.values,
+            rowLabels=df_portfolio_returns_monthly.index,
+            colLabels=df_portfolio_returns_monthly.columns,
             cellLoc="center",
             cellColours=colours,
             loc="center",
@@ -194,104 +198,115 @@ class BacktestResult:
         - weights: A numpy array representing the portfolio weights for each asset.
         """
 
-        # Ensure weights are a numpy array
-        df_weights = self.asset_weights.reindex(
+        # put asset weights (updated monthly) onto same grid as returns (updated daily)
+        df_asset_weights = self.asset_weights.reindex(
             self.asset_returns.index, method="bfill"
         )
 
-        # Calculate portfolio returns by multiplying individual asset returns by weights and summing them
-        df_returns = self.asset_returns.loc[:, df_weights.columns]
-        portfolio_returns = (df_weights * df_returns).sum(axis="columns")
-
-        # Calculate cumulative returns (Cumulative growth) for the portfolio and each individual asset
-        portfolio_cumulative_returns = (1 + portfolio_returns).cumprod()
-        assets_cumulative_returns = (1 + self.asset_returns).cumprod()
-
-        # Calculate drawdowns
-        cumulative_max = portfolio_cumulative_returns.cummax()
-        portfolio_drawdowns = (
-            portfolio_cumulative_returns - cumulative_max
-        ) / cumulative_max
-        portfolio_drawdowns = portfolio_drawdowns.ffill().fillna(0)
-
-        # Calculate annual discrete performance
-        annual_returns = portfolio_returns.resample("YE").apply(
-            lambda x: (1 + x).prod() - 1
-        )
-        asset_annual_returns = self.asset_returns.resample("YE").apply(
-            lambda x: (1 + x).prod() - 1
+        # calculate (daily) portfolio returns
+        df_asset_returns = self.asset_returns.loc[:, df_asset_weights.columns]
+        ser_portfolio_returns = (df_asset_weights * df_asset_returns).sum(
+            axis="columns"
         )
 
-        # Calculate rolling 30-day metrics (not annualised)
-        idx = ~portfolio_returns.isna()
-        rolling_30_volatility = (
-            portfolio_returns.loc[idx].rolling(window=30).std() * np.sqrt(252)
+        # calculate cumulative portfolio returns (equity curve)
+        ser_equity_curve = (1 + ser_portfolio_returns).cumprod()
+
+        # calculate portfolio compound annual growth rate (cagr)
+        n_years = (
+            ser_equity_curve.index[-1] - ser_equity_curve.index[0]
+        ) / pd.Timedelta(days=365)
+        growth = ser_equity_curve.iloc[-1] / ser_equity_curve.iloc[0]
+        cagr = growth ** (1 / n_years) - 1
+
+        # calculate portfolio drawdowns
+        ser_hwm = ser_equity_curve.cummax()
+        ser_portfolio_drawdowns = (ser_equity_curve - ser_hwm) / ser_hwm
+        ser_portfolio_drawdowns = ser_portfolio_drawdowns.ffill().fillna(0)
+
+        # calculate discrete annual performance
+        ser_portfolio_annual_returns = ser_portfolio_returns.resample("YE").apply(
+            lambda x: (1 + x).prod() - 1
+        )
+        ser_asset_annual_returns = self.asset_returns.resample("YE").apply(
+            lambda x: (1 + x).prod() - 1
+        )
+
+        # calculate rolling 30-day metrics (not annualised)
+        idx = ~ser_portfolio_returns.isna()
+        window = pd.Timedelta(days=30)
+
+        ser_rolling_volatility = (
+            ser_portfolio_returns.loc[idx].rolling(window=window).std() * np.sqrt(252)
         ).reindex(idx.index)
-        rolling_30_return = (
-            portfolio_returns.loc[idx]
-            .rolling(window=30)
+
+        ser_rolling_return = (
+            ser_portfolio_returns.loc[idx]
+            .rolling(window=window)
             .apply(lambda x: (1 + x).prod() - 1)
         ).reindex(idx.index)
-        rolling_30_sharpe = (rolling_30_return / rolling_30_volatility).ffill()
 
-        # Calculate monthly returns
-        portfolio_returns_df = portfolio_returns.to_frame(
-            name="Portfolio"
-        )  # Convert Series to DataFrame
-        monthly_returns = portfolio_returns_df.resample("ME").apply(
+        ser_rolling_sharpe = (ser_rolling_return / ser_rolling_volatility).ffill()
+
+        # calculate monthly portfolio returns
+        ser_portfolio_returns_monthly = ser_portfolio_returns.resample("ME").apply(
             lambda x: (1 + x).prod() - 1
         )
 
-        # Pivot table for monthly returns with year as rows and month as columns
-        monthly_returns_table = monthly_returns.pivot_table(
-            index=monthly_returns.index.year,
-            columns=monthly_returns.index.month,
+        # convert to pivot table of monthly returns (year as rows, month as columns)
+        df_portfolio_returns_monthly = ser_portfolio_returns_monthly.to_frame(
+            "Portfolio"
+        ).pivot_table(
+            index=ser_portfolio_returns_monthly.index.year,
+            columns=ser_portfolio_returns_monthly.index.month,
             values="Portfolio",
         )
 
-        # Add a final column for annual returns
-        annual_returns_by_year = portfolio_returns_df.resample("YE").apply(
+        # add portfolio annual returns
+        ser_portfolio_returns_annual = ser_portfolio_returns.resample("YE").apply(
             lambda x: (1 + x).prod() - 1
         )
-        monthly_returns_table["Annual"] = annual_returns_by_year.values
+        df_portfolio_returns_monthly["Annual"] = ser_portfolio_returns_annual.values
 
-        # Set column names for the months
-        months = [month for month in calendar.month_abbr if len(month)]
-        monthly_returns_table.columns = months + ["Annual"]
+        # pretty column names
+        columns = df_portfolio_returns_monthly.columns
+        columns = [calendar.month_abbr[c] if isinstance(c, int) else c for c in columns]
+        df_portfolio_returns_monthly.columns = columns
 
-        # Create the figure and axes for the subplots (A4 size)
+        # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
-
         fig, axs = plt.subplots(
-            5,
-            1,
+            nrows=5,
+            ncols=1,
             figsize=(11.69, 8.27),
             gridspec_kw={"height_ratios": [2, 1, 1, 1, 1]},
             layout="constrained",
         )
 
-        # ---- First Plot: Cumulative Growth and Drawdown (Subplot) ----
+        # 1) cumulative growth and drawdown (line plot)
         self._plot_cumulative_growth_and_drawdown(
-            axs[0], portfolio_cumulative_returns, portfolio_drawdowns
+            axs[0], ser_equity_curve, ser_portfolio_drawdowns
         )
 
-        # ---- Second Plot: Discrete Annual Performance (Bar Plot) ----
+        # 2) discrete annual performance (bar plot)
         self._plot_discrete_annual_performance(
-            axs[1], annual_returns, asset_annual_returns
+            axs[1], ser_portfolio_annual_returns, ser_asset_annual_returns
         )
 
-        # ---- Third Plot: Rolling 30-Day Volatility, Return, and Sharpe Ratio ----
+        # 3) rolling 30-day volatility, return, sharpe ratio
         self._plot_rolling_metrics(
-            axs[2], rolling_30_volatility, rolling_30_return, rolling_30_sharpe
+            axs[2], ser_rolling_volatility, ser_rolling_return, ser_rolling_sharpe
         )
 
-        # ---- Fourth Plot: Asset Weights Over Time (Shaded Area Plot) ----
-        self._plot_asset_weights_over_time(axs[3], df_weights)
+        # 4) asset weights over time (area plot)
+        self._plot_asset_weights_over_time(axs[3], df_asset_weights)
 
-        # ---- Fifth: Monthly Returns Table (Inside Plot) ----
-        self._plot_monthly_returns_table(axs[4], monthly_returns_table)
+        # 5) monthly returns table (table)
+        self._plot_monthly_returns_table(axs[4], df_portfolio_returns_monthly)
 
+        plot_title = f"[{cagr:.2%}]"
         if label is not None:
-            plt.suptitle(label)
+            plot_title = f"{label} {plot_title}"
+        plt.suptitle(plot_title)
 
         return fig
