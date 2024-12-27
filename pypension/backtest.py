@@ -213,11 +213,9 @@ class BacktestResult:
         ser_equity_curve = (1 + ser_portfolio_returns).cumprod()
 
         # calculate portfolio compound annual growth rate (cagr)
-        n_years = (
-            ser_equity_curve.index[-1] - ser_equity_curve.index[0]
-        ) / pd.Timedelta(days=365)
+        n_days = ser_equity_curve.index[-1] - ser_equity_curve.index[0]
         growth = ser_equity_curve.iloc[-1] / ser_equity_curve.iloc[0]
-        cagr = growth ** (1 / n_years) - 1
+        cagr = growth ** (pd.Timedelta(days=365) / n_days) - 1
 
         # calculate portfolio drawdowns
         ser_hwm = ser_equity_curve.cummax()
