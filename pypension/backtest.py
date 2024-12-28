@@ -191,7 +191,7 @@ class BacktestResult:
         }[offset.upper()]
 
         idx = ser_returns.index >= t0
-        return ser_returns.loc[idx, :]
+        return ser_returns.loc[idx,]
 
     @staticmethod
     def _compute_equity_curve(ser_returns: pd.Series) -> pd.Series:
@@ -265,6 +265,25 @@ class BacktestResult:
 
         return df_returns_monthly
 
+    @classmethod
+    def _compute_summary_statistics(cls, ser_returns: pd.Series) -> pd.Series:
+        stats = {
+            "YTD": cls._compute_total_return(cls._subset_returns(ser_returns, "YTD")),
+            "1Y": cls._compute_total_return(cls._subset_returns(ser_returns, "1Y")),
+            "3Y": cls._compute_total_return(cls._subset_returns(ser_returns, "3Y")),
+            "5Y": cls._compute_total_return(cls._subset_returns(ser_returns, "5Y")),
+            "ITD": cls._compute_total_return(ser_returns),
+            "CAGR": cls._compute_annualised_return(ser_returns),
+            "Vol": cls._compute_annualised_volatility(ser_returns),
+            "Max DD": cls._compute_drawdowns(
+                cls._resample_returns(ser_returns, "ME")
+            ).min(),
+        }
+
+        stats["SR"] = stats["CAGR"] / stats["Vol"]
+
+        return pd.Series(stats, name=ser_returns.name, dtype=ser_returns.dtype)
+
     def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
         """
         Plots various portfolio performance metrics including:
@@ -325,6 +344,11 @@ class BacktestResult:
 
         # calculate monthly portfolio returns
         df_portfolio_returns_monthly = self._pivot_monthly_returns(df_returns[label])
+
+        # summary statistics
+        df_summary_statistics = df_returns.apply(
+            self._compute_summary_statistics
+        ).T.map("{:,.2%}".format)
 
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
