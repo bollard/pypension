@@ -23,8 +23,8 @@ class RiskBudgeting(AbstractPortfolio):
         - pd.Series: Optimal portfolio weights for risk budgeting.
         """
 
-        idx = asset_returns.isna().all()
-        asset_returns_active = asset_returns.loc[:, ~idx]
+        idx = ~asset_returns.isna().all()
+        asset_returns_active = asset_returns.loc[:, idx]
 
         # Compute covariance matrix
         cov_matrix = self.calculate_covariance(asset_returns_active)

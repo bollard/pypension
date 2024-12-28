@@ -15,7 +15,8 @@ from pypension.config import END_DATE, PLOT_DIR, START_DATE, TICKERS, TIME_ZONE
 
 def main() -> None:
     df_data = (
-        yf.download(TICKERS, start=START_DATE, end=END_DATE, auto_adjust=True)
+        # ignore dividends (& splits?) to more closely match online sources
+        yf.download(TICKERS, start=START_DATE, end=END_DATE, auto_adjust=False)
         .convert_dtypes()
         .tz_localize(TIME_ZONE)
     )

@@ -27,7 +27,7 @@ class AbstractPortfolio(abc.ABC):
 
     @abc.abstractmethod
     def allocate_weights_t(
-        self, asset_returns: pd.DataFrame, *args, **kwargs
+        self, asset_returns: pd.DataFrame, *, args, **kwargs
     ) -> pd.Series:
         raise NotImplementedError()
 

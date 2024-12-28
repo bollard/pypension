@@ -1,13 +1,12 @@
 import calendar
 import datetime as dt
+from typing import TypeVar
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
-
-from typing import TypeVar
 
 P = TypeVar("P", pd.DataFrame, pd.Series)
 
@@ -67,15 +66,10 @@ class BacktestResult:
         ax_dd.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     @staticmethod
-    def _plot_discrete_annual_performance(
-        ax: plt.Axes, portfolio_returns: pd.Series, asset_returns: pd.DataFrame
-    ):
+    def _plot_discrete_annual_performance(ax: plt.Axes, annual_returns: pd.DataFrame):
         """
         Plots discrete annual performance for both the portfolio and individual assets as a bar plot.
         """
-        annual_returns = pd.concat([portfolio_returns, asset_returns], axis="columns")
-        annual_returns.columns = ["Portfolio"] + list(asset_returns.columns)
-
         width = dt.timedelta(days=30)
 
         # Plot as a bar chart
@@ -185,6 +179,21 @@ class BacktestResult:
         return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1)
 
     @staticmethod
+    def _subset_returns(ser_returns: P, offset: str) -> P:
+        tn = ser_returns.index[-1]
+
+        t0 = {
+            "YTD": tn - pd.offsets.YearBegin(),
+            "MTD": tn - pd.offsets.MonthBegin(),
+            "1Y": tn - pd.DateOffset(years=1),
+            "3Y": tn - pd.DateOffset(years=3),
+            "5Y": tn - pd.DateOffset(years=5),
+        }[offset.upper()]
+
+        idx = ser_returns.index >= t0
+        return ser_returns.loc[idx, :]
+
+    @staticmethod
     def _compute_equity_curve(ser_returns: pd.Series) -> pd.Series:
         return (1 + ser_returns.fillna(0.0)).cumprod()
 
@@ -229,6 +238,33 @@ class BacktestResult:
 
         return ser_drawdowns
 
+    @classmethod
+    def _pivot_monthly_returns(cls, ser_returns: pd.Series) -> pd.DataFrame:
+        # calculate monthly returns
+        ser_returns_monthly = cls._resample_returns(ser_returns, "ME")
+
+        # convert to dataframe
+        label = ser_returns_monthly.name
+        df_returns_monthly = ser_returns_monthly.to_frame(label)
+
+        # convert to pivot table of monthly returns (year as rows, month as columns)
+        df_returns_monthly = df_returns_monthly.pivot_table(
+            index=df_returns_monthly.index.year,
+            columns=df_returns_monthly.index.month,
+            values=label,
+        )
+
+        # add annual returns
+        ser_returns_annual = cls._resample_returns(ser_returns, "YE")
+        df_returns_monthly["Annual"] = ser_returns_annual.values
+
+        # pretty column names
+        columns = df_returns_monthly.columns
+        columns = [calendar.month_abbr[c] if isinstance(c, int) else c for c in columns]
+        df_returns_monthly.columns = columns
+
+        return df_returns_monthly
+
     def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
         """
         Plots various portfolio performance metrics including:
@@ -243,66 +279,52 @@ class BacktestResult:
         - weights: A numpy array representing the portfolio weights for each asset.
         """
 
+        if label is None:
+            label = "Portfolio"
+
         # put asset weights (updated monthly) onto same grid as returns (updated daily)
-        df_asset_weights = self.asset_weights.reindex(
+        df_weights = self.asset_weights.reindex(
             self.asset_returns.index, method="bfill"
-        )
+        ).ffill()
 
-        # calculate (daily) portfolio returns
-        df_asset_returns = self.asset_returns.loc[:, df_asset_weights.columns]
-        ser_portfolio_returns = (df_asset_weights * df_asset_returns).sum(
-            axis="columns"
-        )
+        # append (daily) portfolio returns
+        df_returns = self.asset_returns.loc[:, df_weights.columns]
+        df_returns[label] = (df_weights * df_returns).sum(axis="columns")
 
-        # calculate cumulative portfolio returns (equity curve)
-        ser_equity_curve = (1 + ser_portfolio_returns).cumprod()
+        # calculate cumulative returns (equity curve)
+        df_equity_curve = df_returns.apply(self._compute_equity_curve)
 
-        # calculate portfolio drawdowns
-        ser_portfolio_drawdowns = self._compute_drawdowns(ser_portfolio_returns)
+        # calculate (daily) drawdowns
+        df_drawdowns = df_returns.apply(self._compute_drawdowns)
 
         # calculate discrete annual performance
-        ser_portfolio_returns_annual = self._resample_returns(
-            ser_portfolio_returns, "YE"
-        )
-        df_asset_returns_annual = self._resample_returns(self.asset_returns, "YE")
+        df_returns_annual = df_returns.apply(lambda x: self._resample_returns(x, "YE"))
 
-        # calculate rolling 30-day metrics (not annualised)
-        idx = ~ser_portfolio_returns.isna()
+        # calculate rolling 30-day metrics
         window = pd.Timedelta(days=30)
 
-        ser_rolling_volatility = (
-            ser_portfolio_returns.loc[idx].rolling(window=window).std() * np.sqrt(252)
-        ).reindex(idx.index)
+        df_rolling_volatility = (
+            df_returns.apply(
+                lambda x: x.loc[~x.isna()].rolling(window=window).std() * np.sqrt(252)
+            )
+            .bfill()
+            .ffill()
+        )
 
-        ser_rolling_return = (
-            ser_portfolio_returns.loc[idx]
-            .rolling(window=window)
-            .apply(lambda x: (1 + x).prod() - 1)
-        ).reindex(idx.index)
+        df_rolling_return = (
+            df_returns.apply(
+                lambda x: x.loc[~x.isna()]
+                .rolling(window=window)
+                .apply(lambda y: (1 + y).prod() - 1)
+            )
+            .bfill()
+            .ffill()
+        )
 
-        ser_rolling_sharpe = (ser_rolling_return / ser_rolling_volatility).ffill()
+        df_rolling_sharpe = df_rolling_return / df_rolling_volatility
 
         # calculate monthly portfolio returns
-        ser_portfolio_returns_monthly = self._resample_returns(
-            ser_portfolio_returns, "ME"
-        )
-
-        # convert to pivot table of monthly returns (year as rows, month as columns)
-        df_portfolio_returns_monthly = ser_portfolio_returns_monthly.to_frame(
-            "Portfolio"
-        ).pivot_table(
-            index=ser_portfolio_returns_monthly.index.year,
-            columns=ser_portfolio_returns_monthly.index.month,
-            values="Portfolio",
-        )
-
-        # add portfolio annual returns
-        df_portfolio_returns_monthly["Annual"] = ser_portfolio_returns_annual.values
-
-        # pretty column names
-        columns = df_portfolio_returns_monthly.columns
-        columns = [calendar.month_abbr[c] if isinstance(c, int) else c for c in columns]
-        df_portfolio_returns_monthly.columns = columns
+        df_portfolio_returns_monthly = self._pivot_monthly_returns(df_returns[label])
 
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
@@ -316,27 +338,27 @@ class BacktestResult:
 
         # 1) cumulative growth and drawdown (line plot)
         self._plot_cumulative_growth_and_drawdown(
-            axs[0], ser_equity_curve, ser_portfolio_drawdowns
+            axs[0], df_equity_curve[label], df_drawdowns[label]
         )
 
         # 2) discrete annual performance (bar plot)
-        self._plot_discrete_annual_performance(
-            axs[1], ser_portfolio_returns_annual, df_asset_returns_annual
-        )
+        self._plot_discrete_annual_performance(axs[1], df_returns_annual)
 
         # 3) rolling 30-day volatility, return, sharpe ratio
         self._plot_rolling_metrics(
-            axs[2], ser_rolling_volatility, ser_rolling_return, ser_rolling_sharpe
+            axs[2],
+            df_rolling_volatility[label],
+            df_rolling_return[label],
+            df_rolling_sharpe[label],
         )
 
         # 4) asset weights over time (area plot)
-        self._plot_asset_weights_over_time(axs[3], df_asset_weights)
+        self._plot_asset_weights_over_time(axs[3], df_weights)
 
         # 5) monthly returns table (table)
         self._plot_monthly_returns_table(axs[4], df_portfolio_returns_monthly)
 
-        if label is not None:
-            plt.suptitle(label)
+        plt.suptitle(label)
 
         # todo: table w/ total return, annualised return, annualised vol, annualised return / vol, max dd monthly, annualised return max dd monthly
         # todo: hist of daily returns?
