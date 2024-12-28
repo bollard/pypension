@@ -26,7 +26,7 @@ TICKERS = [
 ]
 
 TIME_ZONE = ZoneInfo("UTC")
-START_DATE = pd.Timestamp(2014, 1, 1, tz=TIME_ZONE)
 END_DATE = pd.Timestamp.now(tz=TIME_ZONE).normalize()
+START_DATE = END_DATE - pd.DateOffset(years=10)
 
 PLOT_DIR = Path().resolve().parent / "plots"
