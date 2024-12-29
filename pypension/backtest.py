@@ -1,6 +1,4 @@
-import calendar
 import datetime as dt
-from typing import TypeVar
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -8,7 +6,7 @@ import matplotlib.ticker as mtick
 import numpy as np
 import pandas as pd
 
-P = TypeVar("P", pd.DataFrame, pd.Series)
+import pypension.analytics as pa
 
 
 class BacktestResult:
@@ -174,116 +172,6 @@ class BacktestResult:
             alpha=0.3,
         )
 
-    @staticmethod
-    def _resample_returns(ser_returns: P, freq: str) -> P:
-        return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1)
-
-    @staticmethod
-    def _subset_returns(ser_returns: P, offset: str) -> P:
-        tn = ser_returns.index[-1]
-
-        t0 = {
-            "YTD": tn - pd.offsets.YearBegin(),
-            "MTD": tn - pd.offsets.MonthBegin(),
-            "1Y": tn - pd.DateOffset(years=1),
-            "3Y": tn - pd.DateOffset(years=3),
-            "5Y": tn - pd.DateOffset(years=5),
-        }[offset.upper()]
-
-        idx = ser_returns.index >= t0
-        return ser_returns.loc[idx,]
-
-    @staticmethod
-    def _compute_equity_curve(ser_returns: pd.Series) -> pd.Series:
-        return (1 + ser_returns.fillna(0.0)).cumprod()
-
-    @classmethod
-    def _compute_total_return(cls, ser_returns: pd.Series) -> np.float64:
-        # calculate cumulative returns (equity curve)
-        ser_equity_curve = cls._compute_equity_curve(ser_returns)
-
-        # calculate total return
-        equity_final, equity_initial = (
-            ser_equity_curve.iloc[-1],
-            ser_equity_curve.iloc[0],
-        )
-
-        return (equity_final - equity_initial) / equity_initial
-
-    @classmethod
-    def _compute_annualised_return(cls, ser_returns: pd.Series) -> np.float64:
-        # calculate cumulative returns (equity curve)
-        ser_equity_curve = cls._compute_equity_curve(ser_returns)
-
-        # calculate compound annual growth rate (cagr) / annualised return
-        n_days = ser_equity_curve.index[-1] - ser_equity_curve.index[0]
-        growth = ser_equity_curve.iloc[-1] / ser_equity_curve.iloc[0]
-        cagr = growth ** (pd.Timedelta(days=365) / n_days) - 1
-
-        return cagr
-
-    @staticmethod
-    def _compute_annualised_volatility(ser_returns: pd.Series) -> np.float64:
-        return ser_returns.std() * np.sqrt(252)
-
-    @classmethod
-    def _compute_drawdowns(cls, ser_returns: pd.Series) -> pd.Series:
-        # calculate cumulative returns (equity curve)
-        ser_equity_curve = cls._compute_equity_curve(ser_returns)
-
-        # calculate drawdowns
-        ser_hwm = ser_equity_curve.cummax()
-        ser_drawdowns = (ser_equity_curve - ser_hwm) / ser_hwm
-        ser_drawdowns = ser_drawdowns.ffill().fillna(0)
-
-        return ser_drawdowns
-
-    @classmethod
-    def _pivot_monthly_returns(cls, ser_returns: pd.Series) -> pd.DataFrame:
-        # calculate monthly returns
-        ser_returns_monthly = cls._resample_returns(ser_returns, "ME")
-
-        # convert to dataframe
-        label = ser_returns_monthly.name
-        df_returns_monthly = ser_returns_monthly.to_frame(label)
-
-        # convert to pivot table of monthly returns (year as rows, month as columns)
-        df_returns_monthly = df_returns_monthly.pivot_table(
-            index=df_returns_monthly.index.year,
-            columns=df_returns_monthly.index.month,
-            values=label,
-        )
-
-        # add annual returns
-        ser_returns_annual = cls._resample_returns(ser_returns, "YE")
-        df_returns_monthly["Annual"] = ser_returns_annual.values
-
-        # pretty column names
-        columns = df_returns_monthly.columns
-        columns = [calendar.month_abbr[c] if isinstance(c, int) else c for c in columns]
-        df_returns_monthly.columns = columns
-
-        return df_returns_monthly
-
-    @classmethod
-    def _compute_summary_statistics(cls, ser_returns: pd.Series) -> pd.Series:
-        stats = {
-            "YTD": cls._compute_total_return(cls._subset_returns(ser_returns, "YTD")),
-            "1Y": cls._compute_total_return(cls._subset_returns(ser_returns, "1Y")),
-            "3Y": cls._compute_total_return(cls._subset_returns(ser_returns, "3Y")),
-            "5Y": cls._compute_total_return(cls._subset_returns(ser_returns, "5Y")),
-            "ITD": cls._compute_total_return(ser_returns),
-            "CAGR": cls._compute_annualised_return(ser_returns),
-            "Vol": cls._compute_annualised_volatility(ser_returns),
-            "Max DD": cls._compute_drawdowns(
-                cls._resample_returns(ser_returns, "ME")
-            ).min(),
-        }
-
-        stats["SR"] = stats["CAGR"] / stats["Vol"]
-
-        return pd.Series(stats, name=ser_returns.name, dtype=ser_returns.dtype)
-
     def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
         """
         Plots various portfolio performance metrics including:
@@ -311,13 +199,13 @@ class BacktestResult:
         df_returns[label] = (df_weights * df_returns).sum(axis="columns")
 
         # calculate cumulative returns (equity curve)
-        df_equity_curve = df_returns.apply(self._compute_equity_curve)
+        df_equity_curve = df_returns.apply(pa._compute_equity_curve)
 
         # calculate (daily) drawdowns
-        df_drawdowns = df_returns.apply(self._compute_drawdowns)
+        df_drawdowns = df_returns.apply(pa._compute_drawdowns)
 
         # calculate discrete annual performance
-        df_returns_annual = df_returns.apply(lambda x: self._resample_returns(x, "YE"))
+        df_returns_annual = df_returns.apply(lambda x: pa._resample_returns(x, "YE"))
 
         # calculate rolling 30-day metrics
         window = pd.Timedelta(days=30)
@@ -343,12 +231,10 @@ class BacktestResult:
         df_rolling_sharpe = df_rolling_return / df_rolling_volatility
 
         # calculate monthly portfolio returns
-        df_portfolio_returns_monthly = self._pivot_monthly_returns(df_returns[label])
+        df_portfolio_returns_monthly = pa._pivot_monthly_returns(df_returns[label])
 
         # summary statistics
-        df_summary_statistics = df_returns.apply(
-            self._compute_summary_statistics
-        ).T.map("{:,.2%}".format)
+        df_summary_statistics = df_returns.apply(pa._compute_summary_statistics).T
 
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
