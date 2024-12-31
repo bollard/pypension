@@ -189,6 +189,11 @@ class BacktestResult:
         if label is None:
             label = "Portfolio"
 
+        if label in self.asset_weights.columns:
+            label = f"{label} Portfolio"
+
+        assert label not in self.asset_weights.columns
+
         # put asset weights (updated monthly) onto same grid as returns (updated daily)
         df_weights = self.asset_weights.reindex(
             self.asset_returns.index, method="bfill"
