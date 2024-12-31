@@ -7,11 +7,11 @@ import pandas as pd
 P = TypeVar("P", pd.DataFrame, pd.Series)
 
 
-def _resample_returns(ser_returns: P, freq: str) -> P:
+def resample_returns(ser_returns: P, freq: str) -> P:
     return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1)
 
 
-def _subset_returns(ser_returns: P, offset: str) -> P:
+def subset_returns(ser_returns: P, offset: str) -> P:
     tn = ser_returns.index[-1]
 
     t0 = {
@@ -26,13 +26,13 @@ def _subset_returns(ser_returns: P, offset: str) -> P:
     return ser_returns.loc[idx,]
 
 
-def _compute_equity_curve(ser_returns: pd.Series) -> pd.Series:
+def compute_equity_curve(ser_returns: pd.Series) -> pd.Series:
     return (1 + ser_returns.fillna(0.0)).cumprod()
 
 
-def _compute_total_return(ser_returns: pd.Series) -> np.float64:
+def compute_total_return(ser_returns: pd.Series) -> np.float64:
     # calculate cumulative returns (equity curve)
-    ser_equity_curve = _compute_equity_curve(ser_returns)
+    ser_equity_curve = compute_equity_curve(ser_returns)
 
     # calculate total return
     equity_final, equity_initial = (
@@ -43,9 +43,9 @@ def _compute_total_return(ser_returns: pd.Series) -> np.float64:
     return (equity_final - equity_initial) / equity_initial
 
 
-def _compute_annualised_return(ser_returns: pd.Series) -> np.float64:
+def compute_annualised_return(ser_returns: pd.Series) -> np.float64:
     # calculate cumulative returns (equity curve)
-    ser_equity_curve = _compute_equity_curve(ser_returns)
+    ser_equity_curve = compute_equity_curve(ser_returns)
 
     # calculate compound annual growth rate (cagr) / annualised return
     n_days = ser_equity_curve.index[-1] - ser_equity_curve.index[0]
@@ -55,13 +55,13 @@ def _compute_annualised_return(ser_returns: pd.Series) -> np.float64:
     return cagr
 
 
-def _compute_annualised_volatility(ser_returns: pd.Series) -> np.float64:
+def compute_annualised_volatility(ser_returns: pd.Series) -> np.float64:
     return ser_returns.std() * np.sqrt(252)
 
 
-def _compute_drawdowns(ser_returns: pd.Series) -> pd.Series:
+def compute_drawdowns(ser_returns: pd.Series) -> pd.Series:
     # calculate cumulative returns (equity curve)
-    ser_equity_curve = _compute_equity_curve(ser_returns)
+    ser_equity_curve = compute_equity_curve(ser_returns)
 
     # calculate drawdowns
     ser_hwm = ser_equity_curve.cummax()
@@ -71,9 +71,9 @@ def _compute_drawdowns(ser_returns: pd.Series) -> pd.Series:
     return ser_drawdowns
 
 
-def _pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
+def pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
     # calculate monthly returns
-    ser_returns_monthly = _resample_returns(ser_returns, "ME")
+    ser_returns_monthly = resample_returns(ser_returns, "ME")
 
     # convert to dataframe
     label = ser_returns_monthly.name
@@ -87,7 +87,7 @@ def _pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
     )
 
     # add annual returns
-    ser_returns_annual = _resample_returns(ser_returns, "YE")
+    ser_returns_annual = resample_returns(ser_returns, "YE")
     df_returns_monthly["Annual"] = ser_returns_annual.values
 
     # pretty column names
@@ -98,16 +98,16 @@ def _pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
     return df_returns_monthly
 
 
-def _compute_summary_statistics(ser_returns: pd.Series) -> pd.Series:
+def compute_summary_statistics(ser_returns: pd.Series) -> pd.Series:
     stats = {
-        "YTD": _compute_total_return(_subset_returns(ser_returns, "YTD")),
-        "1Y": _compute_total_return(_subset_returns(ser_returns, "1Y")),
-        "3Y": _compute_total_return(_subset_returns(ser_returns, "3Y")),
-        "5Y": _compute_total_return(_subset_returns(ser_returns, "5Y")),
-        "ITD": _compute_total_return(ser_returns),
-        "CAGR": _compute_annualised_return(ser_returns),
-        "Vol": _compute_annualised_volatility(ser_returns),
-        "Max DD": _compute_drawdowns(_resample_returns(ser_returns, "ME")).min(),
+        "YTD": compute_total_return(subset_returns(ser_returns, "YTD")),
+        "1Y": compute_total_return(subset_returns(ser_returns, "1Y")),
+        "3Y": compute_total_return(subset_returns(ser_returns, "3Y")),
+        "5Y": compute_total_return(subset_returns(ser_returns, "5Y")),
+        "ITD": compute_total_return(ser_returns),
+        "CAGR": compute_annualised_return(ser_returns),
+        "Vol": compute_annualised_volatility(ser_returns),
+        "Max DD": compute_drawdowns(resample_returns(ser_returns, "ME")).min(),
     }
 
     stats["SR"] = stats["CAGR"] / stats["Vol"]

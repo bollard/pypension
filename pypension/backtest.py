@@ -199,13 +199,13 @@ class BacktestResult:
         df_returns[label] = (df_weights * df_returns).sum(axis="columns")
 
         # calculate cumulative returns (equity curve)
-        df_equity_curve = df_returns.apply(pa._compute_equity_curve)
+        df_equity_curve = df_returns.apply(pa.compute_equity_curve)
 
         # calculate (daily) drawdowns
-        df_drawdowns = df_returns.apply(pa._compute_drawdowns)
+        df_drawdowns = df_returns.apply(pa.compute_drawdowns)
 
         # calculate discrete annual performance
-        df_returns_annual = df_returns.apply(lambda x: pa._resample_returns(x, "YE"))
+        df_returns_annual = df_returns.apply(lambda x: pa.resample_returns(x, "YE"))
 
         # calculate rolling 30-day metrics
         window = pd.Timedelta(days=30)
@@ -231,10 +231,10 @@ class BacktestResult:
         df_rolling_sharpe = df_rolling_return / df_rolling_volatility
 
         # calculate monthly portfolio returns
-        df_portfolio_returns_monthly = pa._pivot_monthly_returns(df_returns[label])
+        df_portfolio_returns_monthly = pa.pivot_monthly_returns(df_returns[label])
 
         # summary statistics
-        df_summary_statistics = df_returns.apply(pa._compute_summary_statistics).T
+        df_summary_statistics = df_returns.apply(pa.compute_summary_statistics).T
 
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})

@@ -23,6 +23,7 @@ TICKERS = [
     "VXUS",  # Vanguard Total International Stock Index Fund ETF Shares
     "BRK-B",  # Berkshire Hathaway Inc.
     "MYI.L",  # Murray International Trust PLC
+    "MWY.L", # Mid Wynd International Invest Trust PLC
 ]
 
 TIME_ZONE = ZoneInfo("UTC")
