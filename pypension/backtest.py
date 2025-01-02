@@ -1,4 +1,3 @@
-import datetime as dt
 from collections import defaultdict
 from functools import partial
 from typing import Callable
@@ -34,7 +33,7 @@ class BacktestResult:
             ser_equity_curve,
             color="g",
             lw=2,
-            label="Portfolio",
+            label=ser_equity_curve.name,
         )
 
         # Plot each individual asset's cumulative growth (thinner, fainter)
@@ -66,65 +65,6 @@ class BacktestResult:
         ax_dd.set_xlim(ax.get_xlim())  # Ensure both x-axes share the same range
         ax_dd.set_ylabel("Drawdown")
         ax_dd.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-
-    @staticmethod
-    def _plot_discrete_annual_performance(ax: plt.Axes, annual_returns: pd.DataFrame):
-        """
-        Plots discrete annual performance for both the portfolio and individual assets as a bar plot.
-        """
-        width = dt.timedelta(days=30)
-
-        # Plot as a bar chart
-        for i, asset in enumerate(annual_returns.columns):
-            offset = (i * width) - ((len(annual_returns.columns) - 1) / 2 * width)
-            ax.bar(
-                annual_returns.index + offset,
-                annual_returns.loc[:, asset],
-                width=width,
-                label=asset,
-            )
-
-        ax.set_title("Discrete Annual Performance")
-        ax.set_ylabel("Return")
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-        ax.set_xticks(annual_returns.index)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-        ax.legend(loc="upper left")
-        ax.grid(True, alpha=0.3)  # Add faint grid lines
-
-    @staticmethod
-    def _plot_rolling_metrics(
-        ax: plt.Axes,
-        ser_rolling_volatility: pd.Series,
-        ser_rolling_return: pd.Series,
-        ser_rolling_sharpe: pd.Series,
-    ):
-        """
-        Plots rolling 30-day volatility, return, and Sharpe ratio for the portfolio.
-        """
-        ax.plot(
-            ser_rolling_volatility.index,
-            ser_rolling_volatility,
-            color="purple",
-            label="30-Day Rolling Volatility (Annualized)",
-        )
-
-        ax_return = ax.twinx()
-        ax_return.plot(
-            ser_rolling_return.index,
-            ser_rolling_return,
-            color="orange",
-            label="30-Day Rolling Return (Annualized)",
-        )
-        ax_return.set_ylabel("Sharpe Ratio")
-        ax_return.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.2f"))
-
-        ax.set_title("Rolling 30-Day Volatility, Return, and Sharpe Ratio (Annualized)")
-        ax.set_ylabel("Metrics")
-        ax.legend(loc="upper left")
-        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
-        ax.xaxis.set_major_locator(mdates.YearLocator())
-        ax.grid(True, alpha=0.3)  # Add faint grid lines
 
     @staticmethod
     def _plot_asset_weights_over_time(ax: plt.Axes, weights_df: pd.DataFrame):
@@ -255,32 +195,6 @@ class BacktestResult:
 
         # calculate (daily) drawdowns
         df_drawdowns = df_returns.apply(pa.compute_drawdowns)
-
-        # calculate discrete annual performance
-        df_returns_annual = df_returns.apply(lambda x: pa.resample_returns(x, "YE"))
-
-        # calculate rolling 30-day metrics
-        window = pd.Timedelta(days=30)
-
-        df_rolling_volatility = (
-            df_returns.apply(
-                lambda x: x.loc[~x.isna()].rolling(window=window).std() * np.sqrt(252)
-            )
-            .bfill()
-            .ffill()
-        )
-
-        df_rolling_return = (
-            df_returns.apply(
-                lambda x: x.loc[~x.isna()]
-                .rolling(window=window)
-                .apply(lambda y: (1 + y).prod() - 1)
-            )
-            .bfill()
-            .ffill()
-        )
-
-        df_rolling_sharpe = df_rolling_return / df_rolling_volatility
 
         # calculate monthly portfolio returns
         df_portfolio_returns_monthly = pa.pivot_monthly_returns(df_returns[label])
