@@ -1,5 +1,9 @@
 import datetime as dt
+from collections import defaultdict
+from functools import partial
+from typing import Callable
 
+import matplotlib.colors as mcolours
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mtick
@@ -139,38 +143,81 @@ class BacktestResult:
         ax.set_ylim(0, 1)
 
     @staticmethod
-    def _plot_monthly_returns_table(
-        ax: plt.Axes, df_portfolio_returns_monthly: pd.DataFrame, n_years: int = 10
+    def _column_format_func(
+        df: pd.DataFrame,
+        column_format: dict[str, str] = None,
+        default_format: str = "{:,.2%}",
+    ) -> dict[str, Callable]:
+        column_default = defaultdict(lambda: default_format)
+        column_format_with_default = column_default | (column_format or {})
+
+        def safe_format(value, fmt):
+            try:
+                return fmt.format(value)
+            except (ValueError, TypeError):
+                print(value)
+                # Return the value as-is if formatting fails
+                return value
+
+        # Use functools.partial to bind the format string for each column
+        format_func = {
+            column: partial(safe_format, fmt=column_format_with_default[column])
+            for column in df.columns
+        }
+
+        return format_func
+
+    @classmethod
+    def _plot_summary_statistics_table(
+        cls, ax: plt.Axes, df_stats: pd.DataFrame, column_format: dict[str, str] = None
     ):
-        """
-        Plots a table inside the figure showing monthly returns and annual totals.
-        """
-        df_portfolio_returns_monthly = df_portfolio_returns_monthly.sort_index(
-            ascending=False
-        ).head(n_years)
-        df_portfolio_returns_monthly = df_portfolio_returns_monthly.mul(100).round(2)
+        format_func = cls._column_format_func(df_stats, column_format)
 
-        values = df_portfolio_returns_monthly.fillna(0.0).to_numpy(np.float64)
-        values[::, -1] = 0  # otherwise annual values will dominate
-        normalise = plt.Normalize(values.min(), values.max())
-
-        from matplotlib.colors import LinearSegmentedColormap
-
-        cmap = LinearSegmentedColormap.from_list("rg", ["r", "w", "g"], N=256)
-
-        colours = cmap(normalise(values))
+        ax.table(
+            cellText=df_stats.transform(format_func).values,
+            rowLabels=df_stats.index,
+            colLabels=df_stats.columns,
+            cellLoc="center",
+            loc="center",
+            alpha=0.3,
+        )
 
         ax.axis("tight")
         ax.axis("off")
+
+    @classmethod
+    def _plot_monthly_returns_table(
+        cls,
+        ax: plt.Axes,
+        df_returns_table: pd.DataFrame,
+        n_years: int = 10,
+        column_format: dict[str, str] = None,
+    ):
+        # put most recent years at the top of the table
+        format_func = cls._column_format_func(df_returns_table, column_format)
+        df_returns_table = df_returns_table.sort_index(ascending=False).head(n_years)
+
+        # normalise returns (excluding annual, which would dominate) for colour map
+        values = df_returns_table.fillna(0.0).to_numpy(np.float64)
+        values[::, -1] = 0
+        normalise = plt.Normalize(values.min(), values.max())
+
+        # initialise colour map
+        cmap = mcolours.LinearSegmentedColormap.from_list("rg", ["r", "w", "g"], N=256)
+        colours = cmap(normalise(values))
+
         ax.table(
-            cellText=df_portfolio_returns_monthly.map("{:,.2f}".format).values,
-            rowLabels=df_portfolio_returns_monthly.index,
-            colLabels=df_portfolio_returns_monthly.columns,
+            cellText=df_returns_table.transform(format_func).values,
+            rowLabels=df_returns_table.index,
+            colLabels=df_returns_table.columns,
             cellLoc="center",
             cellColours=colours,
             loc="center",
             alpha=0.3,
         )
+
+        ax.axis("tight")
+        ax.axis("off")
 
     def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
         """
@@ -239,15 +286,17 @@ class BacktestResult:
         df_portfolio_returns_monthly = pa.pivot_monthly_returns(df_returns[label])
 
         # summary statistics
-        df_summary_statistics = df_returns.apply(pa.compute_summary_statistics).T
+        df_summary_statistics = df_returns.apply(
+            pa.compute_summary_statistics, include_annual_returns=True
+        ).T
 
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
         fig, axs = plt.subplots(
-            nrows=5,
+            nrows=4,
             ncols=1,
             figsize=(11.69, 8.27),
-            gridspec_kw={"height_ratios": [2, 1, 1, 1, 1]},
+            gridspec_kw={"height_ratios": [2, 2, 1, 1]},
             layout="constrained",
         )
 
@@ -256,26 +305,19 @@ class BacktestResult:
             axs[0], df_equity_curve[label], df_drawdowns[label]
         )
 
-        # 2) discrete annual performance (bar plot)
-        self._plot_discrete_annual_performance(axs[1], df_returns_annual)
-
-        # 3) rolling 30-day volatility, return, sharpe ratio
-        self._plot_rolling_metrics(
-            axs[2],
-            df_rolling_volatility[label],
-            df_rolling_return[label],
-            df_rolling_sharpe[label],
+        # 2) stats table
+        self._plot_summary_statistics_table(
+            axs[1],
+            df_summary_statistics,
+            column_format={"SR": "{:,.2f}", "CAGR / DD": "{:,.2f}"},
         )
 
-        # 4) asset weights over time (area plot)
-        self._plot_asset_weights_over_time(axs[3], df_weights)
+        # 3) asset weights over time (area plot)
+        self._plot_asset_weights_over_time(axs[2], df_weights)
 
-        # 5) monthly returns table (table)
-        self._plot_monthly_returns_table(axs[4], df_portfolio_returns_monthly)
+        # 4) monthly returns table (table)
+        self._plot_monthly_returns_table(axs[3], df_portfolio_returns_monthly)
 
         plt.suptitle(label)
-
-        # todo: table w/ total return, annualised return, annualised vol, annualised return / vol, max dd monthly, annualised return max dd monthly
-        # todo: hist of daily returns?
 
         return fig

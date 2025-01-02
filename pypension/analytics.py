@@ -98,7 +98,9 @@ def pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
     return df_returns_monthly
 
 
-def compute_summary_statistics(ser_returns: pd.Series) -> pd.Series:
+def compute_summary_statistics(
+    ser_returns: pd.Series, include_annual_returns: bool = False
+) -> pd.Series:
     stats = {
         "YTD": compute_total_return(subset_returns(ser_returns, "YTD")),
         "1Y": compute_total_return(subset_returns(ser_returns, "1Y")),
@@ -111,5 +113,11 @@ def compute_summary_statistics(ser_returns: pd.Series) -> pd.Series:
     }
 
     stats["SR"] = stats["CAGR"] / stats["Vol"]
+    stats["CAGR / DD"] = stats["CAGR"] / np.abs(stats["Max DD"])
+
+    if include_annual_returns:
+        annual_returns = resample_returns(ser_returns, "YE").to_dict()
+        annual_returns = {key.year: value for key, value in annual_returns.items()}
+        stats |= annual_returns
 
     return pd.Series(stats, name=ser_returns.name, dtype=ser_returns.dtype)

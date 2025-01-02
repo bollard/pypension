@@ -24,15 +24,16 @@ def main() -> None:
         lambda x: x[~x.isna()].pct_change()
     )  # in decimal
 
-    weights = {
-        "BUT.L": 0.15,
-        "JGGI.L": 0.15,
+    weights: dict[str, float] = {
+        "BUT.L": 0.17,
+        "JGGI.L": 0.17,
         "PCT.L": 0.075,
         "SMT.L": 0.075,
-        "VXUS": 0.15,
-        "VT": 0.20,
-        "VTI": 0.20,
+        "VT": 0.17,
+        "FCIT.L": 0.17,
+        "ALW.L": 0.17,
     }
+
     ser_rebalance_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="BME")
 
     portfolios = {
