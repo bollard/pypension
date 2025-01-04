@@ -91,15 +91,15 @@ class BacktestResult:
         column_default = defaultdict(lambda: default_format)
         column_format_with_default = column_default | (column_format or {})
 
-        def safe_format(value, fmt):
+        def safe_format(value, fmt: str):
+            if pd.isna(value):
+                return "-"
             try:
                 return fmt.format(value)
             except (ValueError, TypeError):
-                print(value)
-                # Return the value as-is if formatting fails
                 return value
 
-        # Use functools.partial to bind the format string for each column
+        # use `functools.partial` to bind the format string for each column
         format_func = {
             column: partial(safe_format, fmt=column_format_with_default[column])
             for column in df.columns
@@ -201,7 +201,7 @@ class BacktestResult:
 
         # summary statistics
         df_summary_statistics = df_returns.apply(
-            pa.compute_summary_statistics, include_annual_returns=True
+            pa.compute_summary_statistics, n_annual_returns=5
         ).T
 
         # prepare figure (A4 size)

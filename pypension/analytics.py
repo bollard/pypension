@@ -8,7 +8,7 @@ P = TypeVar("P", pd.DataFrame, pd.Series)
 
 
 def resample_returns(ser_returns: P, freq: str) -> P:
-    return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1)
+    return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1).sort_index()
 
 
 def subset_returns(ser_returns: P, offset: str) -> P:
@@ -99,9 +99,9 @@ def pivot_monthly_returns(ser_returns: pd.Series) -> pd.DataFrame:
 
 
 def compute_summary_statistics(
-    ser_returns: pd.Series, include_annual_returns: bool = False
+    ser_returns: pd.Series, n_annual_returns: int | None = None
 ) -> pd.Series:
-    stats = {
+    stats: dict[str, float] = {
         "YTD": compute_total_return(subset_returns(ser_returns, "YTD")),
         "1Y": compute_total_return(subset_returns(ser_returns, "1Y")),
         "3Y": compute_total_return(subset_returns(ser_returns, "3Y")),
@@ -115,8 +115,10 @@ def compute_summary_statistics(
     stats["SR"] = stats["CAGR"] / stats["Vol"]
     stats["CAGR / DD"] = stats["CAGR"] / np.abs(stats["Max DD"])
 
-    if include_annual_returns:
-        annual_returns = resample_returns(ser_returns, "YE").to_dict()
+    if n_annual_returns:
+        annual_returns = (
+            resample_returns(ser_returns, "YE").tail(n_annual_returns).to_dict()
+        )
         annual_returns = {key.year: value for key, value in annual_returns.items()}
         stats |= annual_returns
 
