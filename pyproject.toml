@@ -1,18 +1,21 @@
-[tool.poetry]
+[project]
 name = "pypension"
 version = "0.1.0"
 description = ""
-authors = ["bollard <358225+bollard@users.noreply.github.com>"]
+authors = [
+    { name = "bollard", email = "<358225+bollard@users.noreply.github.com>" }
+]
 readme = "README.md"
+requires-python = ">=3.12"
 
-[tool.poetry.dependencies]
-python = "^3.12"
-matplotlib = "^3.9"
-numpy = "^2.1"
-pandas = "^2.2"
-scipy = "^1.15"
-seaborn = "^0.13"
-yfinance = "^0.2"
+dependencies = [
+    "matplotlib >= 3.9",
+    "numpy >= 2.1",
+    "pandas >= 2.2",
+    "scipy >= 1.15",
+    "seaborn >= 0.13",
+    "yfinance >= 0.2",
+]
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8"
@@ -24,5 +27,5 @@ target-version = "py312"
 extend-select = ["I"] # isort
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
