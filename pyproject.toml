@@ -3,8 +3,9 @@ name = "pypension"
 version = "0.1.0"
 description = ""
 authors = [
-    { name = "bollard", email = "<358225+bollard@users.noreply.github.com>" }
+    { name = "bollard", email = "358225+bollard@users.noreply.github.com" }
 ]
+license = "Proprietary"
 readme = "README.md"
 requires-python = ">=3.12"
 
