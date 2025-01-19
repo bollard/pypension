@@ -24,9 +24,6 @@ class BacktestResult:
         ser_portfolio_drawdowns: pd.Series,
         assets_cumulative_returns: pd.DataFrame = None,
     ):
-        """
-        Plots cumulative growth for the portfolio and individual assets, with drawdowns using twiny.
-        """
         # Plot the cumulative growth of the portfolio (thicker)
         ax.plot(
             ser_equity_curve.index,
@@ -68,10 +65,6 @@ class BacktestResult:
 
     @staticmethod
     def _plot_asset_weights_over_time(ax: plt.Axes, weights_df: pd.DataFrame):
-        """
-        Plots a shaded area plot showing the evolution of asset weights over time.
-        """
-
         weights_df.plot.area(ax=ax, stacked=True, alpha=0.6)
 
         ax.set_title("Portfolio Asset Weights Over Time")
@@ -160,19 +153,6 @@ class BacktestResult:
         ax.axis("off")
 
     def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
-        """
-        Plots various portfolio performance metrics including:
-        - Cumulative growth and drawdown
-        - Discrete annual performance
-        - Rolling 30-day volatility, return, and Sharpe ratio
-        - Asset weights over time
-        - A table of monthly returns with annual totals inside the plot
-
-        Parameters:
-        - returns: A DataFrame where each column is the daily returns of an individual asset.
-        - weights: A numpy array representing the portfolio weights for each asset.
-        """
-
         if label is None:
             label = "Portfolio"
 
