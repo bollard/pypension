@@ -18,6 +18,9 @@ dependencies = [
     "yfinance >= 0.2",
 ]
 
+[tool.poetry]
+requires-poetry = ">=2.0"
+
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8"
 
