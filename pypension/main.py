@@ -25,13 +25,17 @@ def main() -> None:
     )  # in decimal
 
     weights: dict[str, float] = {
-        "BUT.L": 0.17,
-        "JGGI.L": 0.17,
+        # index
+        "VT": 0.125,
+        "FCIT.L": 0.15,
+        "ALW.L": 0.15,
+        # active
+        "BRK-B": 0.125,
+        "BUT.L": 0.15,
+        "JGGI.L": 0.15,
+        # tech
         "PCT.L": 0.075,
         "SMT.L": 0.075,
-        "VT": 0.17,
-        "FCIT.L": 0.17,
-        "ALW.L": 0.17,
     }
 
     ser_rebalance_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="BME")
