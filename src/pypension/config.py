@@ -1,4 +1,4 @@
-from pathlib import Path
+import importlib.resources
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -31,4 +31,4 @@ TIME_ZONE = ZoneInfo("UTC")
 END_DATE = pd.Timestamp.now(tz=TIME_ZONE).normalize()
 START_DATE = (END_DATE - pd.DateOffset(years=10)) - pd.offsets.MonthBegin()
 
-PLOT_DIR = Path().resolve().parent / "plots"
+PLOT_DIR = importlib.resources.files(__package__).joinpath("plots")

@@ -20,9 +20,12 @@ dependencies = [
 
 [tool.poetry]
 requires-poetry = ">= 2.0"
+packages = [
+    { include = "pypension", from = "src" }
+]
 
 [tool.poetry.group.dev.dependencies]
-ruff = ">= 0.11, < 0.12"
+ruff = ">= 0.11"
 
 [tool.ruff]
 target-version = "py312"
