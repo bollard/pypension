@@ -25,10 +25,11 @@ TICKERS = [
     "MYI.L",  # Murray International Trust PLC
     "MWY.L",  # Mid Wynd International Invest Trust PLC
     "ALW.L",  # Alliance Witan Ord (ALW.L)
+    "IGET.L",  # Invesco Global Equity Income Trust ord
 ]
 
 TIME_ZONE = ZoneInfo("UTC")
-END_DATE = pd.Timestamp.now(tz=TIME_ZONE).normalize()
-START_DATE = (END_DATE - pd.DateOffset(years=10)) - pd.offsets.MonthBegin()
+END_DTTM = pd.Timestamp.now(tz=TIME_ZONE).normalize()
+START_DTTM = (END_DTTM - pd.DateOffset(years=10)) - pd.offsets.MonthBegin()
 
 PLOT_DIR = importlib.resources.files(__package__).joinpath("plots")

@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import yfinance as yf
 
 from pypension.allocation_methods import (
     EqualWight,
@@ -10,20 +9,12 @@ from pypension.allocation_methods import (
     TangencyPortfolio,
 )
 from pypension.backtest import BacktestResult
-from pypension.config import END_DATE, PLOT_DIR, START_DATE, TICKERS, TIME_ZONE
+from pypension.config import END_DTTM, PLOT_DIR, START_DTTM
+from pypension.data import download
 
 
 def main() -> None:
-    df_data = (
-        # ignore dividends (& splits?) to more closely match online sources
-        yf.download(TICKERS, start=START_DATE, end=END_DATE, auto_adjust=False)
-        .convert_dtypes()
-        .tz_localize(TIME_ZONE)
-    )
-    df_returns = df_data["Close"].apply(
-        lambda x: x[~x.isna()].pct_change()
-    )  # in decimal
-
+    # define fixed weight portfolio
     weights: dict[str, float] = {
         # index
         "VT": 0.125,
@@ -38,8 +29,19 @@ def main() -> None:
         "SMT.L": 0.075,
     }
 
-    ser_rebalance_dates = pd.date_range(start=START_DATE, end=END_DATE, freq="BME")
+    # download close prices
+    tickers = list(weights.keys()) + ["VTI"]
+    df_data = download(tickers, start_dttm=START_DTTM, end_dttm=END_DTTM)
 
+    # compute daily percentage changes (in decimal)
+    df_returns = df_data["Close"].apply(
+        lambda x: x[~x.isna()].pct_change()
+    )
+
+    # define a (month end) rebalance schedule
+    ser_rebalance_dates = pd.date_range(start=START_DTTM, end=END_DTTM, freq="BME")
+
+    # define portfolio allocation methods
     portfolios = {
         "Fixed Weight": FixedWeight(df_returns.loc[:, weights.keys()], weights=weights),
         "VTI": RiskParity(df_returns.loc[:, ["VTI", "VT"]]),
