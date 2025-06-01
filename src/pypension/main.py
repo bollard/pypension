@@ -8,6 +8,7 @@ from pypension.allocation_methods import (
     RiskParity,
     TangencyPortfolio,
 )
+from pypension.allocation_methods.base import AbstractPortfolio
 from pypension.backtest import BacktestResult
 from pypension.config import END_DTTM, PLOT_DIR, START_DTTM
 from pypension.data import download
@@ -34,15 +35,13 @@ def main() -> None:
     df_data = download(tickers, start_dttm=START_DTTM, end_dttm=END_DTTM)
 
     # compute daily percentage changes (in decimal)
-    df_returns = df_data["Close"].apply(
-        lambda x: x[~x.isna()].pct_change()
-    )
+    df_returns = df_data["Close"].apply(lambda x: x[~x.isna()].pct_change())
 
     # define a (month end) rebalance schedule
     ser_rebalance_dates = pd.date_range(start=START_DTTM, end=END_DTTM, freq="BME")
 
     # define portfolio allocation methods
-    portfolios = {
+    portfolios: dict[str, AbstractPortfolio] = {
         "Fixed Weight": FixedWeight(df_returns.loc[:, weights.keys()], weights=weights),
         "VTI": RiskParity(df_returns.loc[:, ["VTI", "VT"]]),
         "HRP": HierarchicalRiskParity(df_returns.loc[:, weights.keys()]),
