@@ -24,13 +24,12 @@ def download(
 
 
 def clean(df_data: pd.DataFrame) -> pd.DataFrame:
-    overrides = [
+    scaling_factors = [
         ("IGET.L", pd.Timestamp(2025, 1, 10, tzinfo=TIME_ZONE), 100),
-        ("FCIT.L", pd.Timestamp(2025, 4, 25, tzinfo=TIME_ZONE), 100),
     ]
 
-    for ticker, date, factor in overrides:
+    for ticker, date, scaling_factor in scaling_factors:
         if ticker in df_data.columns.get_level_values("Ticker"):
-            df_data.loc[date, pd.IndexSlice[:, ticker]] *= factor
+            df_data.loc[date, pd.IndexSlice[:, ticker]] *= scaling_factor
 
     return df_data

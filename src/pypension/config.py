@@ -26,6 +26,7 @@ TICKERS = [
     "MWY.L",  # Mid Wynd International Invest Trust PLC
     "ALW.L",  # Alliance Witan Ord (ALW.L)
     "IGET.L",  # Invesco Global Equity Income Trust ord
+    "CHSPI.SW", # iShares Core SPI ETF (CH) (CHSPI.SW)
 ]
 
 TIME_ZONE = ZoneInfo("UTC")
