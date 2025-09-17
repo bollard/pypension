@@ -64,6 +64,13 @@ class BacktestResult:
         ax_dd.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     @staticmethod
+    def _plot_asset_contribution_over_time(ax: plt.Axes, returns_df: pd.DataFrame):
+        plt.stackplot(
+            pa.resample_returns(returns_df, "ME").index,
+            *pa.resample_returns(returns_df, "ME").T.to_numpy(np.float64),
+        )
+
+    @staticmethod
     def _plot_asset_weights_over_time(ax: plt.Axes, weights_df: pd.DataFrame):
         weights_df.plot.area(ax=ax, stacked=True, alpha=0.6)
 
@@ -187,7 +194,7 @@ class BacktestResult:
         # prepare figure (A4 size)
         plt.rcParams.update({"font.size": 8})
         fig, axs = plt.subplots(
-            nrows=4,
+            nrows=5,
             ncols=1,
             figsize=(11.69, 8.27),
             gridspec_kw={"height_ratios": [2, 2, 1, 1]},
@@ -206,11 +213,14 @@ class BacktestResult:
             column_format={"SR": "{:,.2f}", "CAGR / DD": "{:,.2f}"},
         )
 
-        # 3) asset weights over time (area plot)
-        self._plot_asset_weights_over_time(axs[2], df_weights)
+        # 3) asset contribution over time (stack plot)
+        self._plot_asset_contribution_over_time(axs[2], df_returns.drop(label, axis="columns"))
 
-        # 4) monthly returns table (table)
-        self._plot_monthly_returns_table(axs[3], df_portfolio_returns_monthly)
+        # 4) asset weights over time (area plot)
+        self._plot_asset_weights_over_time(axs[3], df_weights)
+
+        # 5) monthly returns table (table)
+        self._plot_monthly_returns_table(axs[4], df_portfolio_returns_monthly)
 
         plt.suptitle(label)
 
