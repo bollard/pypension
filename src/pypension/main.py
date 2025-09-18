@@ -18,13 +18,13 @@ def main() -> None:
     # define fixed weight portfolio
     weights: dict[str, float] = {
         # index
-        "VT": 0.125,
-        "FCIT.L": 0.15,
-        "ALW.L": 0.15,
+        "VT": 0.225,
+        "FCIT.L": 0.125,
+        "ALW.L": 0.125,
         # active
         "BRK-B": 0.125,
-        "BUT.L": 0.15,
-        "JGGI.L": 0.15,
+        "BUT.L": 0.125,
+        "JGGI.L": 0.125,
         # tech
         "PCT.L": 0.075,
         "SMT.L": 0.075,

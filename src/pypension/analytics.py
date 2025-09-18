@@ -15,8 +15,8 @@ def subset_returns(ser_returns: P, offset: str) -> P:
     tn = ser_returns.index[-1]
 
     t0 = {
-        "YTD": tn - pd.offsets.YearBegin(),
-        "MTD": tn - pd.offsets.MonthBegin(),
+        "YTD": tn - pd.offsets.YearEnd(),
+        "MTD": tn - pd.offsets.MonthEnd(),
         "1Y": tn - pd.DateOffset(years=1),
         "3Y": tn - pd.DateOffset(years=3),
         "5Y": tn - pd.DateOffset(years=5),
@@ -109,6 +109,8 @@ def compute_summary_statistics(
         "ITD": compute_total_return(ser_returns),
         "CAGR": compute_annualised_return(ser_returns),
         "Vol": compute_annualised_volatility(ser_returns),
+        "Min": ser_returns.min(),
+        "Max": ser_returns.max(),
         "Max DD": compute_drawdowns(resample_returns(ser_returns, "ME")).min(),
     }
 
