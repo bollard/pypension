@@ -65,22 +65,40 @@ class BacktestResult:
 
     @staticmethod
     def _plot_asset_contribution_over_time(ax: plt.Axes, returns_df: pd.DataFrame):
-        plt.stackplot(
-            pa.resample_returns(returns_df, "ME").index,
-            *pa.resample_returns(returns_df, "ME").T.to_numpy(np.float64),
-        )
+        def _label_format(ts: pd.Timestamp) -> str:
+            label = ""
+
+            if ts.month % 3 == 0:
+                label = ts.month_name()[:3]
+
+            if ts.month == 1:
+                label = ts.year
+
+            return label
+
+        df_eom = pa.resample_returns(returns_df, "ME")
+        df_eom.plot.bar(stacked=True, ax=ax)
+
+        ax.grid(True, alpha=0.3)
+        ax.get_legend().remove()
+
+        ax.set_xticklabels(map(_label_format, df_eom.index))
+        ax.set_ylabel("Return")
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
 
     @staticmethod
     def _plot_asset_weights_over_time(ax: plt.Axes, weights_df: pd.DataFrame):
         weights_df.plot.area(ax=ax, stacked=True, alpha=0.6)
 
-        ax.set_title("Portfolio Asset Weights Over Time")
-        ax.set_ylabel("Weight")
-        ax.xaxis.set_major_locator(mdates.YearLocator())
+        ax.grid(True, alpha=0.3)
+        ax.get_legend().remove()
+
         ax.tick_params(axis="x", labelrotation=0)
-        ax.grid(True, alpha=0.3)  # Add faint grid lines
-        ax.legend(loc="upper left")
+        ax.xaxis.set_major_locator(mdates.YearLocator())
+
+        ax.set_ylabel("Weight")
         ax.set_ylim(0, 1)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=0))
 
     @staticmethod
     def _column_format_func(
@@ -197,7 +215,7 @@ class BacktestResult:
             nrows=5,
             ncols=1,
             figsize=(11.69, 8.27),
-            gridspec_kw={"height_ratios": [2, 2, 1, 1]},
+            gridspec_kw={"height_ratios": [2, 2, 1, 1, 1]},
             layout="constrained",
         )
 
@@ -214,7 +232,9 @@ class BacktestResult:
         )
 
         # 3) asset contribution over time (stack plot)
-        self._plot_asset_contribution_over_time(axs[2], df_returns.drop(label, axis="columns"))
+        self._plot_asset_contribution_over_time(
+            axs[2], df_returns.drop(label, axis="columns") * df_weights
+        )
 
         # 4) asset weights over time (area plot)
         self._plot_asset_weights_over_time(axs[3], df_weights)
