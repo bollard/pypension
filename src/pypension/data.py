@@ -25,7 +25,7 @@ def download(
 
 def clean(df_data: pd.DataFrame) -> pd.DataFrame:
     scaling_factors = [
-        ("IGET.L", pd.Timestamp(2025, 1, 10, tzinfo=TIME_ZONE), 100),
+        # ("IGET.L", pd.Timestamp(2025, 1, 10, tzinfo=TIME_ZONE), 100),
     ]
 
     for ticker, date, scaling_factor in scaling_factors:
