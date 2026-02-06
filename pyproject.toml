@@ -2,7 +2,7 @@
 name = "pypension"
 version = "0.1.0"
 description = "Backtest pension investments"
-license = "Proprietary"
+license = "LicenseRef-Proprietary"
 authors = [
     { name = "bollard", email = "358225+bollard@users.noreply.github.com" }
 ]
@@ -19,15 +19,17 @@ dependencies = [
 ]
 
 [tool.poetry]
-requires-poetry = ">= 2.0"
+requires-poetry = ">= 2.3"
 packages = [
     { include = "pypension", from = "src" }
 ]
 
-[tool.poetry.group.dev.dependencies]
-pandas-stubs = ">= 3.0.0"
-pre-commit = ">= 4.5.1"
-ruff = ">= 0.14.14"
+[dependency-groups]
+dev = [
+    "pandas-stubs >= 3.0.0",
+    "pre-commit >= 4.5.1",
+    "ruff >= 0.14.14",
+]
 
 [tool.ruff]
 target-version = "py313"
