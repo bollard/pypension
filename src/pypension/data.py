@@ -13,6 +13,8 @@ def download(
     if end_dttm is None:
         end_dttm = END_DTTM
 
+    tickers: list[str] = list(set(tickers))
+
     df_data = (
         # ignore dividends (& splits?) to more closely match online sources
         yf.download(tickers, start=start_dttm, end=end_dttm, auto_adjust=False)

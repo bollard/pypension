@@ -30,7 +30,12 @@ def main() -> None:
     }
 
     # download close prices
-    tickers = list(weights.keys()) + ["VTI"]
+    tickers: list[str] = list(weights.keys())
+
+    for ticker in ["VT", "VTI"]:
+        if ticker not in tickers:
+            tickers.append(ticker)
+
     df_data = download(tickers, start_dttm=START_DTTM, end_dttm=END_DTTM)
 
     # compute daily percentage changes (in decimal)
