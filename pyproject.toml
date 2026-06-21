@@ -27,7 +27,7 @@ dev = [
     "pandas-stubs >= 3.0.3",
     "pre-commit >= 4.6.0",
     "ruff >= 0.15.17",
-    "scipy-stubs >= 1.17.1",
+    "scipy-stubs >= 1.18.0",
 ]
 
 [build-system]
