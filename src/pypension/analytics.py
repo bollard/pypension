@@ -1,17 +1,16 @@
 import calendar
-from typing import TypeVar
 
 import numpy as np
 import pandas as pd
 
-P = TypeVar("P", pd.DataFrame, pd.Series)
+type PandasData[T: (pd.Series, pd.DataFrame)] = T
 
 
-def resample_returns(ser_returns: P, freq: str) -> P:
+def resample_returns(ser_returns: PandasData, freq: str) -> PandasData:
     return ser_returns.resample(freq).apply(lambda x: (1 + x).prod() - 1).sort_index()
 
 
-def subset_returns(ser_returns: P, offset: str) -> P:
+def subset_returns(ser_returns: PandasData, offset: str) -> PandasData:
     tn = ser_returns.index[-1]
 
     t0 = {

@@ -1,6 +1,6 @@
 from collections import defaultdict
+from collections.abc import Callable
 from functools import partial
-from typing import Callable
 
 import matplotlib.colors as mcolours
 import matplotlib.dates as mdates
@@ -103,7 +103,7 @@ class BacktestResult:
     @staticmethod
     def _column_format_func(
         df: pd.DataFrame,
-        column_format: dict[str, str] = None,
+        column_format: dict[str, str] | None = None,
         default_format: str = "{:,.2%}",
     ) -> dict[str, Callable]:
         column_default = defaultdict(lambda: default_format)
@@ -127,7 +127,10 @@ class BacktestResult:
 
     @classmethod
     def _plot_summary_statistics_table(
-        cls, ax: plt.Axes, df_stats: pd.DataFrame, column_format: dict[str, str] = None
+        cls,
+        ax: plt.Axes,
+        df_stats: pd.DataFrame,
+        column_format: dict[str, str] | None = None,
     ):
         format_func = cls._column_format_func(df_stats, column_format)
 
@@ -149,7 +152,7 @@ class BacktestResult:
         ax: plt.Axes,
         df_returns_table: pd.DataFrame,
         n_years: int = 10,
-        column_format: dict[str, str] = None,
+        column_format: dict[str, str] | None = None,
     ):
         # put most recent years at the top of the table
         format_func = cls._column_format_func(df_returns_table, column_format)
@@ -177,7 +180,7 @@ class BacktestResult:
         ax.axis("tight")
         ax.axis("off")
 
-    def plot_portfolio_returns(self, label: str = None) -> plt.Figure:
+    def plot_portfolio_returns(self, label: str | None = None) -> plt.Figure:
         if label is None:
             label = "Portfolio"
 

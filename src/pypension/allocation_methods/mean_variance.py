@@ -7,7 +7,7 @@ from pypension.allocation_methods.base import AbstractPortfolio
 
 class MinimumVariance(AbstractPortfolio):
     def allocate_weights_t(
-        self, asset_returns: pd.DataFrame, target_return: float = None, **kwargs
+        self, asset_returns: pd.DataFrame, target_return: float | None = None, **kwargs
     ) -> pd.Series:
         """
         Compute the Minimum Variance Portfolio.
