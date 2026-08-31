@@ -867,7 +867,7 @@ requires-dist = [
 dev = [
     { name = "pandas-stubs", specifier = ">=3.0.5" },
     { name = "pre-commit", specifier = ">=4.6.2" },
-    { name = "ruff", specifier = ">=0.16.2" },
+    { name = "ruff", specifier = ">=0.16.5" },
     { name = "scipy-stubs", specifier = ">=1.18.0" },
 ]
 
@@ -971,27 +971,27 @@ wheels = [
 
 [[package]]
 name = "ruff"
-version = "0.16.2"
+version = "0.16.5"
 source = { registry = "https://artifacts.bd.local/pypi/pypi/simple" }
-sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2.tar.gz", hash = "sha256:c3d7828d12e8927a6fc65fe38e2c2541b9e762d360a1786d752cb1b8883b3c9c", size = 4885811, upload-time = "2026-08-07T13:31:01.432Z" }
+sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5.tar.gz", hash = "sha256:1b88500f9ffbcab3dedb0082c9f9492e91ec3d618aac1236a3e0189938f7040b", size = 4912003, upload-time = "2026-08-27T16:34:18.258Z" }
 wheels = [
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-linux_armv6l.whl", hash = "sha512:21b66b40dd213b7763f1877ed164346dc8ea69bdc3f5aaf16046b1f155788937b8e0b1d465405897ed085df315f674b9f82c171777a28fbcf91873845725abca", size = 10847925, upload-time = "2026-08-07T11:30:14Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:9a48cc05c6fbc811ca81b5d7ba95375affea6582d1b8024e455e41afbbf55344", size = 11072662, upload-time = "2026-08-07T13:30:18.143Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:a2c0d14fcbb26c91f0f867a6dc9bd71bbc30b1b6151829c884f23faeab2e5700", size = 10566771, upload-time = "2026-08-07T13:30:20.899Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:335c621622c4650330be50842561c6586ac6971bb8ab5407fe34dcc9efb16bbe", size = 10975825, upload-time = "2026-08-07T13:30:23.517Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:20e66910f2c37cc753f9ef6580c914a621b80c4fa3549d3e3521e29d0f5bfc3f", size = 10649437, upload-time = "2026-08-07T13:30:26.097Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:c7e36fbfba65510548156902bcf1350a979a958ce0347ce0f90d73894036b39f", size = 11446761, upload-time = "2026-08-07T13:30:28.752Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:f0eab35f80df8f134aae5d1630e751901321d317cc8e50dc39e36fa3ed34cd12", size = 12336364, upload-time = "2026-08-07T13:30:31.468Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:40ea8c0594feb894e89c8c61ab9c103d38b0ea72dfde6c594107147ca31b1140", size = 11630720, upload-time = "2026-08-07T13:30:34.426Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha512:ea992949e0e913c2a43d6ed7221c354487cb256c2fd22c9784afbc3a039488d293ba5e70a95ba309e672205285eafb0029cb5f1d8c57bd4bc3a86d0926e51557", size = 11466130, upload-time = "2026-08-07T11:30:36Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:e43e1f5b8388da9eca1b9e88328d47a5cec794633ccf6f7484ac2dd15eee92c0", size = 11523634, upload-time = "2026-08-07T13:30:39.822Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:c24788a980581e1d7ea3a0cbe4344c4fbeb0a6a9b1f4713aa46bb104f8294690", size = 10949807, upload-time = "2026-08-07T13:30:42.745Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:81806b08329130005dd4a8a8394a0c9da8c6f4cafb16ba438d2a2ee6a18bedf1", size = 10646891, upload-time = "2026-08-07T13:30:45.522Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-musllinux_1_2_i686.whl", hash = "sha256:4ce4e02bad779bef557f541a1b31f20d6abeae1cc05ed1b1ac019d4ffd1044c8", size = 11162063, upload-time = "2026-08-07T13:30:48.131Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:e0422abdf70070255fc4073ce9dfc814cc03db577013761ddd09bc1e4a9a4fbd", size = 11556038, upload-time = "2026-08-07T13:30:50.686Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-win32.whl", hash = "sha256:bf3a63d78fb39f4bf5ac8ae52051c5520505301abe19ba4e204c453b3f09bb0b", size = 10872850, upload-time = "2026-08-07T13:30:53.471Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-win_amd64.whl", hash = "sha512:3b71364181aafd4c2ec14e0d8dd48f7bcc11e3b07cf367fb78d91faf9ef16751bee81919b30024ce0596a01a5db73c7ea435eaf28be096f3ce561620fe11e8b7", size = 12023338, upload-time = "2026-08-07T11:30:56Z" },
-    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.2/ruff-0.16.2-py3-none-win_arm64.whl", hash = "sha256:d614e95cedf38a2053fd351c55b103ba30d017d61688fdbfd40ee0412852a99f", size = 11374065, upload-time = "2026-08-07T13:30:58.775Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-linux_armv6l.whl", hash = "sha512:5e79747d33f4789de3ce5c03af2c085ddb1e5c527ad9d19fa6c12445c977b93dbce80a08352554d40c30629ddc7461eb2fdb338187d3cac56a71bbe0c03c9dbb", size = 10011941, upload-time = "2026-08-27T14:33:41Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:eda58a5802de40e7ed5b32b64e0b32539338cc6fcd2c78f61e3ad6a0d79f51c3", size = 10204049, upload-time = "2026-08-27T16:33:44.056Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-macosx_11_0_arm64.whl", hash = "sha256:c5ae9a7b9a8875131f40f8fe967cc86abf899779efd663cb7ce3d572d01da7eb", size = 9809037, upload-time = "2026-08-27T16:33:46.257Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:7b719b0a1f4d59710d283ab2965f621684a108a9e41da622e3b23f0326cd0025", size = 9964129, upload-time = "2026-08-27T16:33:48.352Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:2298f2780ed1be0c5cb1361e32ab7b1467f3cce7dabe101d2210a314f2fe42e9", size = 9821518, upload-time = "2026-08-27T16:33:50.57Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:258f29035a2dd021e7861e631b227a5b3f14e50c1184c9a6a122c5f4576154d7", size = 10534835, upload-time = "2026-08-27T16:33:52.522Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:b9a4f0432966834019c74d1b7e5c51224305d7713f3d7faf3e7451f1a3be3cde", size = 11252550, upload-time = "2026-08-27T16:33:54.521Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:b5eb3a8c3d0ade9cea42b591fd530368e8798380e30e0a308b85a5cf718f09ea", size = 10777949, upload-time = "2026-08-27T16:33:56.88Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha512:73dcb6dc5425f9854f2b5fc5a21ae5b22baf57be88d922367367dbfe0e942d946b58c68f6493f5e61850d0de594858eb6687eb250569524b372ce6e8757735fc", size = 10311656, upload-time = "2026-08-27T14:33:59Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:0eeab41fbea2c42f98dfb9822cdccda9d24ba38d49f6dc945b5c236d48f0ef29", size = 10532125, upload-time = "2026-08-27T16:34:01.166Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:f0768e9df4300713fff30733c87575f68b6f1d8de41184e505b7fdd9c0c95eaf", size = 10097648, upload-time = "2026-08-27T16:34:03.16Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:95cc70cdc7aa80c338de356279d2adbeb2de0f520b9ecd8aba75b94e95e02f91", size = 9829344, upload-time = "2026-08-27T16:34:05.134Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-musllinux_1_2_i686.whl", hash = "sha256:d185c8398ded1bfd91c0c2cb258346307571eccc473a8490af8c3977399c384a", size = 10277117, upload-time = "2026-08-27T16:34:07.425Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:fb8e3a3c4c6a784150a7ced53b015f4b253fc2bf97a610886419ead64b4756ef", size = 10711653, upload-time = "2026-08-27T16:34:09.712Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-win32.whl", hash = "sha256:288b0a5f080492fe5635db849f9e2e84aa3cce7b7f0e955997d416c507c76a26", size = 10034250, upload-time = "2026-08-27T16:34:11.8Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-win_amd64.whl", hash = "sha512:11e22fe1b641f7a374d02c08e0a85e82fc0da9b05ee552d88c80a495861d6369e77247a77fd88f035b2ae0242f30511f87ae5a7ae507b0c9c6ba5176daa1664a", size = 10516714, upload-time = "2026-08-27T14:34:13Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/ruff/0.16.5/ruff-0.16.5-py3-none-win_arm64.whl", hash = "sha256:a64abe90968719b851bb7cedffaa8753fbdbdadab483089682db623f3edc587e", size = 10391564, upload-time = "2026-08-27T16:34:16.064Z" },
 ]
 
 [[package]]
