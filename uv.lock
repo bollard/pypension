@@ -868,7 +868,7 @@ dev = [
     { name = "pandas-stubs", specifier = ">=3.0.5" },
     { name = "pre-commit", specifier = ">=4.6.2" },
     { name = "ruff", specifier = ">=0.16.5" },
-    { name = "scipy-stubs", specifier = ">=1.18.0" },
+    { name = "scipy-stubs", specifier = ">=1.18.1" },
 ]
 
 [[package]]
@@ -1057,14 +1057,14 @@ wheels = [
 
 [[package]]
 name = "scipy-stubs"
-version = "1.18.0.1"
+version = "1.18.1.0"
 source = { registry = "https://artifacts.bd.local/pypi/pypi/simple" }
 dependencies = [
     { name = "optype", extra = ["numpy"] },
 ]
-sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/scipy-stubs/1.18.0.1/scipy_stubs-1.18.0.1.tar.gz", hash = "sha256:761cb35106200c90a37034d3c8120d3899d673de1e5879d3a2ac1d6816c62327", size = 410862, upload-time = "2026-07-12T21:09:29.993Z" }
+sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/scipy-stubs/1.18.1.0/scipy_stubs-1.18.1.0.tar.gz", hash = "sha256:87bec0df883cd9cd6b7dc4c74a33362cf550e9cad679643a29a886ab2b438ddc", size = 448822, upload-time = "2026-08-22T09:22:52.944Z" }
 wheels = [
-    { url = "https://artifacts.bd.local/pypi/pypi/download/scipy-stubs/1.18.0.1/scipy_stubs-1.18.0.1-py3-none-any.whl", hash = "sha512:c57c3cb736a8d965e381311353e39b6c66e804f760a46d1f90209cae612fc2d62af76879b6ce76a0d15cfbb0202c49a7d28001d2755ee19eb4f8d2f6dc14ca03", size = 616217, upload-time = "2026-07-12T19:09:28Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/scipy-stubs/1.18.1.0/scipy_stubs-1.18.1.0-py3-none-any.whl", hash = "sha512:4c5374afe2fb01ee29ed6f6e4e78e541a439d136414a884297e2c3713ee84e1ec275a87e71f456e082366e6a94a70fa8d42935ab0584aaf7a4467729615a4125", size = 653731, upload-time = "2026-08-22T07:22:51Z" },
 ]
 
 [[package]]
