@@ -776,7 +776,7 @@ wheels = [
 
 [[package]]
 name = "pre-commit"
-version = "4.6.1"
+version = "4.6.2"
 source = { registry = "https://artifacts.bd.local/pypi/pypi/simple" }
 dependencies = [
     { name = "cfgv" },
@@ -785,9 +785,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "virtualenv" },
 ]
-sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/pre-commit/4.6.1/pre_commit-4.6.1.tar.gz", hash = "sha256:03e809865c7d178b9979d06c761fcbfe6808fdaded8581a745bb110e52050421", size = 198646, upload-time = "2026-07-21T20:56:58.225Z" }
+sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/pre-commit/4.6.2/pre_commit-4.6.2.tar.gz", hash = "sha256:8f5d7bfb021ecdbcd9d49d89847082dd24172ccde534390081a679ad046e2441", size = 198670, upload-time = "2026-08-10T22:07:18.421Z" }
 wheels = [
-    { url = "https://artifacts.bd.local/pypi/pypi/download/pre-commit/4.6.1/pre_commit-4.6.1-py2.py3-none-any.whl", hash = "sha512:08a2937b6f705d419806cd361e37d5ea848a725e08bd258f14dba80a9cd0f0c8888f815c7b564b9617b01c0577f34d42066599a7874d6864d77a00933e7a944e", size = 226186, upload-time = "2026-07-21T18:56:57Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/pre-commit/4.6.2/pre_commit-4.6.2-py2.py3-none-any.whl", hash = "sha512:8f8b7b9dc0996a29620abec786d7019b0af04e07056090f8795135b2f13f717201c1544784e999980572cc49adf8e7f411f5a690f17ecbcd30f0c57b7be30222", size = 226202, upload-time = "2026-08-10T20:07:16Z" },
 ]
 
 [[package]]
@@ -866,7 +866,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pandas-stubs", specifier = ">=3.0.5" },
-    { name = "pre-commit", specifier = ">=4.6.1" },
+    { name = "pre-commit", specifier = ">=4.6.2" },
     { name = "ruff", specifier = ">=0.16.2" },
     { name = "scipy-stubs", specifier = ">=1.18.0" },
 ]
@@ -1197,5 +1197,5 @@ dependencies = [
 ]
 sdist = { url = "https://artifacts.bd.local/pypi/pypi/download/yfinance/1.7.0/yfinance-1.7.0.tar.gz", hash = "sha256:442f780d13d3e52fefa6c721c2c9bfee321078c1987d6585ec193b5c24382f8a", size = 176142, upload-time = "2026-08-26T17:25:08.102Z" }
 wheels = [
-    { url = "https://artifacts.bd.local/pypi/pypi/download/yfinance/1.7.0/yfinance-1.7.0-py3-none-any.whl", hash = "sha256:91281ecd1f71069a37155ff8653aff2d3085f3492bd8721f18b70955da62911a", size = 149341, upload-time = "2026-08-26T17:25:06.726Z" },
+    { url = "https://artifacts.bd.local/pypi/pypi/download/yfinance/1.7.0/yfinance-1.7.0-py3-none-any.whl", hash = "sha512:4fc888cabc58342a9e719ea49379ae3ab607e14dd13d6f890ee90049479e30096b823b3ac9ebed5692c32b9ec272bc78bd28a233ff2c606d4ee9964e45765f44", size = 149341, upload-time = "2026-08-26T15:25:06Z" },
 ]
