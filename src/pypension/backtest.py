@@ -231,7 +231,7 @@ class BacktestResult:
         self._plot_summary_statistics_table(
             axs[1],
             df_summary_statistics,
-            column_format={"SR": "{:,.2f}", "CAGR / DD": "{:,.2f}"},
+            column_format={"SR": "{:,.2f}", "Calmar": "{:,.2f}"},
         )
 
         # 3) asset contribution over time (stack plot)

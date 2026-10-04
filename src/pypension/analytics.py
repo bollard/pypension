@@ -114,7 +114,7 @@ def compute_summary_statistics(
     }
 
     stats["SR"] = stats["CAGR"] / stats["Vol"]
-    stats["CAGR / DD"] = stats["CAGR"] / np.abs(stats["Max DD"])
+    stats["Calmar"] = stats["CAGR"] / np.abs(stats["Max DD"])
 
     if n_annual_returns:
         annual_returns = (
