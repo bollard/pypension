@@ -25,7 +25,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pandas-stubs >= 3.0.5",
-    "pre-commit >= 4.6.2",
+    "pre-commit >= 4.7.0",
     "ruff >= 0.16.5",
     "scipy-stubs >= 1.18.1",
 ]
