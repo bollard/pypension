@@ -114,7 +114,7 @@ class BacktestResult:
                 return "-"
             try:
                 return fmt.format(value)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 return value
 
         # use `functools.partial` to bind the format string for each column
