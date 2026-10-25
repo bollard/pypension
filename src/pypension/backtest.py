@@ -65,14 +65,17 @@ class BacktestResult:
 
     @staticmethod
     def _plot_asset_contribution_over_time(ax: plt.Axes, returns_df: pd.DataFrame):
-        def _label_format(ts: pd.Timestamp) -> str:
-            label = ""
+        def _label_format(val: int, pos: int, idx: pd.DatetimeIndex) -> str:
+            label: str = ""
+            ts: pd.Timestamp = idx[pos]
 
+            # mar, jun, sep, dec
             if ts.month % 3 == 0:
-                label = ts.month_name()[:3]
+                label = ts.strftime("%b")
 
+            # show the year
             if ts.month == 1:
-                label = ts.year
+                label = str(ts.year)
 
             return label
 
@@ -82,7 +85,9 @@ class BacktestResult:
         ax.grid(True, alpha=0.3)
         ax.get_legend().remove()
 
-        ax.set_xticklabels(map(_label_format, df_eom.index))
+        formatter_fn = partial(_label_format, idx=df_eom.index)
+        ax.xaxis.set_major_formatter(mtick.FuncFormatter(formatter_fn))
+
         ax.set_ylabel("Return")
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
 
