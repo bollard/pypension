@@ -1,3 +1,5 @@
+import warnings
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -31,27 +33,28 @@ def main() -> None:
 
     # download close prices
     tickers: list[str] = list(weights.keys())
+    tickers_vt = ["VT", "VTI"]
+    tickers_download = list(set(tickers) | set(tickers_vt))
 
-    for ticker in ["VT", "VTI"]:
-        if ticker not in tickers:
-            tickers.append(ticker)
-
-    df_data = download(tickers, start_dttm=START_DTTM, end_dttm=END_DTTM)
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=pd.errors.Pandas4Warning)
+        df_data = download(tickers_download, start_dttm=START_DTTM, end_dttm=END_DTTM)
 
     # compute daily percentage changes (in decimal)
-    df_returns = df_data["Close"].apply(lambda x: x[~x.isna()].pct_change())
+    df_close: pd.DataFrame = df_data.loc[:, pd.IndexSlice["Close"]]
+    df_returns = df_close.apply(lambda x: x[~x.isna()].pct_change())
 
     # define a (month end) rebalance schedule
     ser_rebalance_dates = pd.date_range(start=START_DTTM, end=END_DTTM, freq="BME")
 
     # define portfolio allocation methods
     portfolios: dict[str, AbstractPortfolio] = {
-        "Fixed Weight": FixedWeight(df_returns.loc[:, weights.keys()], weights=weights),
-        "VTI": RiskParity(df_returns.loc[:, ["VTI", "VT"]]),
-        "HRP": HierarchicalRiskParity(df_returns.loc[:, weights.keys()]),
-        "Risk Parity": RiskParity(df_returns.loc[:, weights.keys()]),
-        "Tangency Portfolio": TangencyPortfolio(df_returns.loc[:, weights.keys()]),
-        "Equal Wight": EqualWight(df_returns.loc[:, weights.keys()]),
+        "Fixed Weight": FixedWeight(df_returns.loc[:, tickers], weights=weights),
+        "VTI": RiskParity(df_returns.loc[:, tickers_vt]),
+        "HRP": HierarchicalRiskParity(df_returns.loc[:, tickers]),
+        "Risk Parity": RiskParity(df_returns.loc[:, tickers]),
+        "Tangency Portfolio": TangencyPortfolio(df_returns.loc[:, tickers]),
+        "Equal Wight": EqualWight(df_returns.loc[:, tickers]),
     }
 
     for i, (label, portfolio) in enumerate(portfolios.items(), start=1):
