@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import scipy.optimize as spo
@@ -9,8 +11,9 @@ class RiskBudgeting(AbstractPortfolio):
     def allocate_weights_t(
         self,
         asset_returns: pd.DataFrame,
+        *args: Any,
         target_risk_contributions: dict[str, float],
-        **kwargs,
+        **kwargs: Any,
     ) -> pd.Series:
         """
         Compute the Risk Budgeting Portfolio.
@@ -75,9 +78,11 @@ class RiskBudgeting(AbstractPortfolio):
 
 
 class RiskParity(RiskBudgeting):
-    def allocate_weights_t(self, asset_returns: pd.DataFrame, **kwargs) -> pd.Series:
+    def allocate_weights_t(
+        self, asset_returns: pd.DataFrame, *args, **kwargs
+    ) -> pd.Series:
         assets = asset_returns.columns
         equal_rc = {asset: 1 / len(assets) for asset in assets}
         return super().allocate_weights_t(
-            asset_returns, target_risk_contributions=equal_rc
+            asset_returns, target_risk_contributions=equal_rc, **kwargs
         )

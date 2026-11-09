@@ -1,4 +1,5 @@
 import abc
+from typing import Any
 
 import pandas as pd
 
@@ -27,9 +28,8 @@ class AbstractPortfolio(abc.ABC):
 
     @abc.abstractmethod
     def allocate_weights_t(
-        self, asset_returns: pd.DataFrame, *, args, **kwargs
-    ) -> pd.Series:
-        raise NotImplementedError()
+        self, asset_returns: pd.DataFrame, *args: Any, **kwargs: Any
+    ) -> pd.Series: ...
 
     @staticmethod
     def calculate_returns(df_close: pd.DataFrame) -> pd.DataFrame:
