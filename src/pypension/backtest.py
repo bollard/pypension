@@ -22,7 +22,7 @@ class BacktestResult:
         ax: plt.Axes,
         ser_equity_curve: pd.Series,
         ser_portfolio_drawdowns: pd.Series,
-        assets_cumulative_returns: pd.DataFrame = None,
+        assets_cumulative_returns: pd.DataFrame | None = None,
     ):
         # Plot the cumulative growth of the portfolio (thicker)
         ax.plot(

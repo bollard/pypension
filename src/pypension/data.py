@@ -5,7 +5,9 @@ from pypension.config import END_DTTM, START_DTTM, TIME_ZONE
 
 
 def download(
-    tickers: list[str], start_dttm: pd.Timestamp = None, end_dttm: pd.Timestamp = None
+    tickers: list[str],
+    start_dttm: pd.Timestamp | None = None,
+    end_dttm: pd.Timestamp | None = None,
 ) -> pd.DataFrame:
     if start_dttm is None:
         start_dttm = START_DTTM
