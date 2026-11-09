@@ -41,8 +41,8 @@ def main() -> None:
         df_data = download(tickers_download, start_dttm=START_DTTM, end_dttm=END_DTTM)
 
     # compute daily percentage changes (in decimal)
-    df_close: pd.DataFrame = df_data.loc[:, pd.IndexSlice["Close"]]
-    df_returns = df_close.apply(lambda x: x[~x.isna()].pct_change())
+    df_close: pd.DataFrame = df_data.loc[:, pd.IndexSlice["Close", tickers_download]]
+    df_returns = df_close.apply(lambda x: x.dropna().pct_change())
 
     # define a (month end) rebalance schedule
     ser_rebalance_dates = pd.date_range(start=START_DTTM, end=END_DTTM, freq="BME")
