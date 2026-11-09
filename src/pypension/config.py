@@ -29,6 +29,10 @@ TICKERS = [
     "IGET.L",  # Invesco Global Equity Income Trust ord
     "CHSPI.SW",  # iShares Core SPI ETF (CH) (CHSPI.SW)
     "ELM",  # Elm Market Navigator ETF
+    "CTY.L",  # City of London Ord
+    "LWDB.L",  # Law Debenture Corporation plc Ord 5P
+    "TMPL.L",  # Temple Bar Investment Trust PLC
+    "MRCH.L",  # The Merchants Trust PLC
 ]
 
 TIME_ZONE = ZoneInfo("UTC")
