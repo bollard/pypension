@@ -65,7 +65,7 @@ class BacktestResult:
 
     @staticmethod
     def _plot_asset_contribution_over_time(ax: plt.Axes, returns_df: pd.DataFrame):
-        def _label_format(val: int, pos: int, idx: pd.DatetimeIndex) -> str:
+        def _label_format(_x: int, pos: int, idx: pd.DatetimeIndex) -> str:
             label: str = ""
             ts: pd.Timestamp = idx[pos]
 
@@ -83,7 +83,8 @@ class BacktestResult:
         df_eom.plot.bar(stacked=True, ax=ax)
 
         ax.grid(True, alpha=0.3)
-        ax.get_legend().remove()
+        if legend := ax.get_legend():
+            legend.remove()
 
         formatter_fn = partial(_label_format, idx=df_eom.index)
         ax.xaxis.set_major_formatter(mtick.FuncFormatter(formatter_fn))
@@ -96,7 +97,8 @@ class BacktestResult:
         weights_df.plot.area(ax=ax, stacked=True, alpha=0.6)
 
         ax.grid(True, alpha=0.3)
-        ax.get_legend().remove()
+        if legend := ax.get_legend():
+            legend.remove()
 
         ax.tick_params(axis="x", labelrotation=0)
         ax.xaxis.set_major_locator(mdates.YearLocator())
